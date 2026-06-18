@@ -22,6 +22,17 @@ export interface AdminUser {
   ucreated_at: string
 }
 
+/** 新用户默认演示任务 */
+function demoTasks(userId: string) {
+  return [
+    { user_id: userId, title: '👋 欢迎使用智能看板', desc: '拖拽或点击按钮将任务在不同列之间移动，试试看吧！', status: 'todo' as TaskStatus, priority: 'mid' as TaskPriority },
+    { user_id: userId, title: '📝 创建你的第一个任务', desc: '在页面底部的表单中输入标题和描述，点击添加即可创建新任务。', status: 'todo' as TaskStatus, priority: 'high' as TaskPriority },
+    { user_id: userId, title: '🚀 正在进行的任务示例', desc: '这个任务正在进行中，完成后点击 ✓ 移到右边。', status: 'doing' as TaskStatus, priority: 'high' as TaskPriority },
+    { user_id: userId, title: '🔍 试试搜索和筛选功能', desc: '顶部工具栏可以按关键词搜索，也可以按状态筛选任务。', status: 'doing' as TaskStatus, priority: 'mid' as TaskPriority },
+    { user_id: userId, title: '✅ 这是一个已完成的任务', desc: '点击 ✓ 完成任务后，它会出现在这一列。数据会自动保存到云端。', status: 'done' as TaskStatus, priority: 'low' as TaskPriority },
+  ]
+}
+
 export const useTasksStore = defineStore('tasks', () => {
   const tasks = ref<Task[]>([])
   const loading = ref(false)
@@ -60,7 +71,18 @@ export const useTasksStore = defineStore('tasks', () => {
       .order('created_at', { ascending: false })
 
     if (!error && data) {
-      tasks.value = data
+      if (data.length === 0) {
+        // 新用户，插入演示任务
+        const seed = demoTasks(auth.user.id)
+        const { data: inserted } = await supabase
+          .from('tasks')
+          .insert(seed)
+          .select('*')
+          .order('created_at', { ascending: false })
+        tasks.value = inserted || []
+      } else {
+        tasks.value = data
+      }
     }
     loading.value = false
   }
@@ -110,7 +132,7 @@ export const useTasksStore = defineStore('tasks', () => {
     }
   }
 
-  // ==================== 管理员：查看所有用户 ====================
+  // ==================== 管理员 ====================
   async function adminFetchUsers() {
     const { data, error } = await supabase.rpc('admin_list_users')
     if (!error && data) {
@@ -118,7 +140,6 @@ export const useTasksStore = defineStore('tasks', () => {
     }
   }
 
-  // ==================== 管理员：查看/修改指定用户任务 ====================
   async function adminSelectUser(userId: string) {
     adminSelectedUserId.value = userId
     const { data, error } = await supabase.rpc('admin_get_user_tasks', {
