@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { RouterLink, RouterView, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import FloatingQR from '@/components/FloatingQR.vue'
+
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -52,8 +52,8 @@ async function handleLogout() {
       </RouterView>
     </main>
 
-    <!-- 浮动二维码名片 -->
-    <FloatingQR />
+
+
   </div>
 </template>
 

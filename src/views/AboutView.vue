@@ -98,6 +98,25 @@ onUnmounted(() => window.removeEventListener('keydown', escClose))
       </div>
     </section>
 
+    <!-- ====== 联系开发者 ====== -->
+    <section class="section" data-section="contact" :class="{ visible: isVisible('contact') }">
+      <h2 class="section-title">💬 联系开发者</h2>
+      <div class="contact-card">
+        <div class="contact-qr">
+          <img src="/qq-qrcode.png" alt="QQ二维码" class="contact-qr-img" />
+        </div>
+        <div class="contact-info">
+          <h3>有问题或建议？</h3>
+          <p>扫码添加开发者 QQ 好友，直接反馈</p>
+          <div class="contact-tags">
+            <span>🐛 问题反馈</span>
+            <span>💡 功能建议</span>
+            <span>💬 技术交流</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ====== 感谢 + 捐赠 ====== -->
     <section class="section donate-section" data-section="donate" :class="{ visible: isVisible('donate') }">
       <div class="donate-inner">
@@ -322,7 +341,55 @@ onUnmounted(() => window.removeEventListener('keydown', escClose))
 .pain-arrow { font-size: 1.3rem; color: var(--color-primary); font-weight: 700; }
 .pain-after { flex: 1; font-size: 0.87rem; color: var(--color-success); font-weight: 500; }
 
-/* ====== 捐赠区域 ====== */
+/* ====== 联系开发者卡片 ====== */
+.contact-card {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  padding: 28px 32px;
+  transition: all 0.3s ease;
+}
+.contact-card:hover { border-color: var(--color-primary); }
+.contact-qr-img {
+  width: 130px;
+  height: 130px;
+  border-radius: 12px;
+  display: block;
+  background: white;
+  padding: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+.contact-info h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.contact-info p {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-bottom: 12px;
+}
+.contact-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.contact-tags span {
+  padding: 4px 12px;
+  background: rgba(99,102,241,0.08);
+  border: 1px solid rgba(99,102,241,0.2);
+  border-radius: 16px;
+  font-size: 0.78rem;
+  color: var(--color-primary);
+}
+
+@media (max-width: 480px) {
+  .contact-card { flex-direction: column; text-align: center; }
+}
+
 .donate-section { text-align: center; }
 .donate-inner {
   background: linear-gradient(135deg, rgba(245,158,11,0.06), rgba(239,68,68,0.06));
