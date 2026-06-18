@@ -49,7 +49,7 @@ onUnmounted(() => window.removeEventListener('keydown', escClose))
       <div class="hero-stats">
         <div class="hstat"><strong>3列</strong>看板</div>
         <div class="hstat"><strong>云端</strong>同步</div>
-        <div class="hstat"><strong>管理员</strong>后台</div>
+        <div class="hstat"><strong>极速</strong>好用</div>
         <div class="hstat"><strong>免费</strong>使用</div>
       </div>
       <div class="scroll-hint">
@@ -71,7 +71,7 @@ onUnmounted(() => window.removeEventListener('keydown', escClose))
           { icon:'🔍', title:'快速检索', desc:'支持关键词搜索和状态筛选，哪怕几十条任务也能秒定位。' },
           { icon:'☁️', title:'云端同步', desc:'数据实时存入数据库，换电脑、换手机，登录即同步。' },
           { icon:'🔐', title:'数据隔离', desc:'每个人独立账户，自己的任务只有自己看得见，安全可靠。' },
-          { icon:'🛡️', title:'管理员后台', desc:'团队管理者一键查看所有成员任务，轻松掌控全局。' },
+          { icon:'⚡', title:'极速体验', desc:'零学习成本，输入名字即用。页面秒开，操作流畅，不卡顿。' },
           { icon:'📱', title:'手机也能用', desc:'响应式设计，自适应手机、平板、电脑，随时随地处理。' },
         ]" :key="item.title" :style="{ transitionDelay: (i * 0.08) + 's' }">
           <div class="card-icon">{{ item.icon }}</div>
