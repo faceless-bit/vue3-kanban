@@ -62,18 +62,25 @@ export const useAuthStore = defineStore('auth', () => {
         .eq('user_id', user.value?.id)
         .single()
       isAdmin.value = data?.is_admin ?? false
-    } catch {
-      // profile 不存在（比如重建过表），自动补建
+      console.log('checkAdmin: 从profiles读取 is_admin =', isAdmin.value)
+    } catch (e: any) {
+      console.log('checkAdmin: profiles不存在或不完整，自动修复...', e?.message)
       try {
         const username = (user.value?.user_metadata?.username as string) || ''
         const isAdminUser = username === '胡伟建'
-        await supabase.from('profiles').upsert({
+        console.log('checkAdmin: 自动建profile, username=', username, 'isAdmin=', isAdminUser)
+        const { error: upsertErr } = await supabase.from('profiles').upsert({
           user_id: user.value!.id,
           username,
           is_admin: isAdminUser,
         }, { onConflict: 'user_id' })
+        if (upsertErr) {
+          console.error('checkAdmin: upsert失败', upsertErr.message)
+        }
         isAdmin.value = isAdminUser
-      } catch {
+        console.log('checkAdmin: 修复后 is_admin =', isAdmin.value)
+      } catch (e2: any) {
+        console.error('checkAdmin: 自动修复失败', e2?.message)
         isAdmin.value = false
       }
     }
