@@ -37,7 +37,7 @@ const filteredTasks = computed(() => {
   }
   if (searchQuery.value.trim()) {
     const q = searchQuery.value.trim().toLowerCase()
-    list = list.filter(t => t.title.toLowerCase().includes(q) || t.desc.toLowerCase().includes(q))
+    list = list.filter(t => t.title.toLowerCase().includes(q) || t.description.toLowerCase().includes(q))
   }
   return list
 })
@@ -174,7 +174,7 @@ const priorityLabel: Record<string, string> = { low: '🟢 低', mid: '🟡 中'
                 <span class="task-time">{{ formatDate(task.created_at) }}</span>
               </div>
               <h4 class="task-title">{{ task.title }}</h4>
-              <p class="task-desc" v-if="task.desc">{{ task.desc }}</p>
+              <p class="task-desc" v-if="task.description">{{ task.description }}</p>
               <div class="task-actions">
                 <template v-if="task.status !== 'todo'">
                   <button class="btn-action btn-left" title="左移" @click="moveTask(task.id, task.status === 'doing' ? 'todo' : 'doing')">◀</button>
