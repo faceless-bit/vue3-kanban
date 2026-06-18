@@ -83,7 +83,7 @@ export const useAuthStore = defineStore('auth', () => {
         user_id: data.user.id,
         username: username.trim(),
         is_admin: isAdmin.value,
-      }, { onConflict: 'user_id' }).catch(() => {})
+      }, { onConflict: 'user_id' }).then(() => {}, () => {})
     }
     return data
   }
