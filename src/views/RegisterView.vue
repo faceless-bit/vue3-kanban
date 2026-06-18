@@ -8,30 +8,26 @@ const router = useRouter()
 const auth = useAuthStore()
 const tasksStore = useTasksStore()
 
-const email = ref('')
+const username = ref('')
 const password = ref('')
-const confirm = ref('')
 const error = ref('')
 const submitting = ref(false)
 
 async function handleRegister() {
   error.value = ''
-  if (!email.value.trim() || !password.value || !confirm.value) {
-    error.value = '请填写所有字段'
+  if (!username.value.trim() || !password.value) {
+    error.value = '请填写用户名和密码'
     return
   }
-  if (password.value.length < 6) {
-    error.value = '密码至少 6 位'
-    return
-  }
-  if (password.value !== confirm.value) {
-    error.value = '两次密码不一致'
+  if (password.value.length < 3) {
+    error.value = '密码至少 3 位'
     return
   }
   submitting.value = true
   try {
-    await auth.signUp(email.value.trim(), password.value)
-    // 注册成功后尝试迁移本地旧数据
+    // 用 username 构造 Supabase 所需邮箱，同时把真实用户名存入 metadata
+    await auth.signUp(username.value.trim(), password.value)
+    // 迁移本地旧数据
     await tasksStore.migrateFromLocalStorage()
     router.replace('/')
   } catch (e: any) {
@@ -48,19 +44,19 @@ async function handleRegister() {
       <div class="auth-header">
         <span class="auth-icon">✨</span>
         <h1>注册</h1>
-        <p>创建一个新账户，开始管理你的任务</p>
+        <p>起一个名字，设一个密码，马上开始</p>
       </div>
 
       <form @submit.prevent="handleRegister" class="auth-form">
         <div v-if="error" class="auth-error">{{ error }}</div>
 
-        <label class="field-label">邮箱</label>
+        <label class="field-label">用户名</label>
         <input
-          v-model="email"
-          type="email"
-          placeholder="your@email.com"
+          v-model="username"
+          type="text"
+          placeholder="随便起个名就行"
           class="form-input"
-          autocomplete="email"
+          autocomplete="username"
           :disabled="submitting"
         />
 
@@ -68,17 +64,7 @@ async function handleRegister() {
         <input
           v-model="password"
           type="password"
-          placeholder="至少 6 位"
-          class="form-input"
-          autocomplete="new-password"
-          :disabled="submitting"
-        />
-
-        <label class="field-label">确认密码</label>
-        <input
-          v-model="confirm"
-          type="password"
-          placeholder="再次输入密码"
+          placeholder="设置一个密码"
           class="form-input"
           autocomplete="new-password"
           :disabled="submitting"

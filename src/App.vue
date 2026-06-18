@@ -31,8 +31,8 @@ async function handleLogout() {
 
         <!-- 用户菜单 -->
         <div v-if="auth.user" class="user-menu">
-          <span class="user-email" :title="auth.user.email">
-            {{ auth.user.email }}
+          <span class="user-name" :title="auth.displayName">
+            👤 {{ auth.displayName }}
           </span>
           <button class="btn-logout" @click="handleLogout" title="退出登录">
             退出
@@ -188,9 +188,9 @@ a {
   gap: 10px;
 }
 
-.user-email {
+.user-name {
   font-size: 0.82rem;
-  color: var(--color-text-muted);
+  color: var(--color-text);
   max-width: 160px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -232,7 +232,7 @@ a {
   .app-main {
     padding: 16px 12px;
   }
-  .user-email {
+  .user-name {
     max-width: 100px;
     font-size: 0.75rem;
   }

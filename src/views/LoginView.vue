@@ -6,20 +6,20 @@ import { useAuthStore } from '@/stores/auth'
 const router = useRouter()
 const auth = useAuthStore()
 
-const email = ref('')
+const username = ref('')
 const password = ref('')
 const error = ref('')
 const submitting = ref(false)
 
 async function handleLogin() {
   error.value = ''
-  if (!email.value.trim() || !password.value) {
-    error.value = '请填写邮箱和密码'
+  if (!username.value.trim() || !password.value) {
+    error.value = '请填写用户名和密码'
     return
   }
   submitting.value = true
   try {
-    await auth.signIn(email.value.trim(), password.value)
+    await auth.signIn(username.value.trim(), password.value)
     router.replace('/')
   } catch (e: any) {
     error.value = e.message || '登录失败，请重试'
@@ -35,19 +35,19 @@ async function handleLogin() {
       <div class="auth-header">
         <span class="auth-icon">📋</span>
         <h1>登录</h1>
-        <p>登录你的智能任务看板账户</p>
+        <p>欢迎回来，输入用户名和密码即可</p>
       </div>
 
       <form @submit.prevent="handleLogin" class="auth-form">
         <div v-if="error" class="auth-error">{{ error }}</div>
 
-        <label class="field-label">邮箱</label>
+        <label class="field-label">用户名</label>
         <input
-          v-model="email"
-          type="email"
-          placeholder="your@email.com"
+          v-model="username"
+          type="text"
+          placeholder="输入你的用户名"
           class="form-input"
-          autocomplete="email"
+          autocomplete="username"
           :disabled="submitting"
         />
 
