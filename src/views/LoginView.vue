@@ -60,6 +60,7 @@ async function handleLogin() {
     await auth.signUp(name, pass)
     router.replace('/')
   } catch (e: any) {
+    console.error('自动注册失败:', e)
     error.value = '自动注册失败：' + (e.message || '请重试')
   } finally {
     submitting.value = false

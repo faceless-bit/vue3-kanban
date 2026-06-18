@@ -11,7 +11,7 @@ function emailFrom(username: string): string {
     hash = ((hash << 5) - hash) + username.charCodeAt(i)
     hash |= 0
   }
-  return 'u' + Math.abs(hash).toString(36) + '@kbn.local'
+  return 'u' + Math.abs(hash).toString(36) + '@kb.usr'
 }
 
 export const useAuthStore = defineStore('auth', () => {
