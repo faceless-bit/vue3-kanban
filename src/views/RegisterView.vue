@@ -10,6 +10,7 @@ const tasksStore = useTasksStore()
 
 const username = ref('')
 const password = ref('')
+const showPwd = ref(false)
 const error = ref('')
 const success = ref('')
 const submitting = ref(false)
@@ -82,14 +83,19 @@ async function handleRegister() {
         />
 
         <label class="field-label">密码（至少6位）</label>
-        <input
-          v-model="password"
-          type="password"
-          placeholder="至少6位"
-          class="form-input"
-          autocomplete="new-password"
-          :disabled="submitting"
-        />
+        <div class="pwd-wrap">
+          <input
+            v-model="password"
+            :type="showPwd ? 'text' : 'password'"
+            placeholder="至少6位"
+            class="form-input"
+            autocomplete="new-password"
+            :disabled="submitting"
+          />
+          <button type="button" class="pwd-toggle" @click="showPwd = !showPwd" tabindex="-1">
+            {{ showPwd ? '🙈' : '👁️' }}
+          </button>
+        </div>
 
         <button type="submit" class="btn-auth" :disabled="submitting">
           {{ submitting ? '注册中...' : '🚀 注册' }}
@@ -181,9 +187,28 @@ async function handleRegister() {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px var(--color-primary-glow);
 }
-.form-input:disabled {
-  opacity: 0.5;
+.form-input:disabled { opacity: 0.5; }
+
+.pwd-wrap { position: relative; }
+.pwd-wrap .form-input { padding-right: 44px; }
+.pwd-toggle {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
 }
+.pwd-toggle:hover { background: rgba(99,102,241,0.1); }
 
 .btn-auth {
   padding: 12px;
