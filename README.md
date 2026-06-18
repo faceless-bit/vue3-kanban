@@ -63,6 +63,79 @@ CREATE POLICY "user_own_tasks"
   ON tasks FOR ALL
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
+
+-- 用户资料表
+CREATE TABLE profiles (
+  id         BIGSERIAL PRIMARY KEY,
+  user_id    UUID UNIQUE NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  username   TEXT NOT NULL,
+  is_admin   BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "users_read_own_profile" ON profiles FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "users_insert_own_profile" ON profiles FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- 管理员函数：获取所有用户
+CREATE OR REPLACE FUNCTION admin_list_users()
+RETURNS TABLE(uid UUID, uname TEXT, ucreated_at TIMESTAMPTZ)
+SECURITY DEFINER SET search_path = public
+LANGUAGE plpgsql AS $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND is_admin = true) THEN
+    RAISE EXCEPTION 'Access denied';
+  END IF;
+  RETURN QUERY SELECT p.user_id, p.username, p.created_at FROM profiles p ORDER BY p.created_at DESC;
+END;
+$$;
+
+-- 管理员函数：获取指定用户的任务
+CREATE OR REPLACE FUNCTION admin_get_user_tasks(target_user_id UUID)
+RETURNS SETOF tasks
+SECURITY DEFINER SET search_path = public
+LANGUAGE plpgsql AS $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND is_admin = true) THEN
+    RAISE EXCEPTION 'Access denied';
+  END IF;
+  RETURN QUERY SELECT * FROM tasks WHERE user_id = target_user_id ORDER BY created_at DESC;
+END;
+$$;
+
+-- 管理员函数：更新任意任务
+CREATE OR REPLACE FUNCTION admin_update_task(
+  task_id     BIGINT,
+  new_title   TEXT,
+  new_desc    TEXT,
+  new_status  TEXT,
+  new_priority TEXT
+) RETURNS void
+SECURITY DEFINER SET search_path = public
+LANGUAGE plpgsql AS $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND is_admin = true) THEN
+    RAISE EXCEPTION 'Access denied';
+  END IF;
+  UPDATE tasks SET title = new_title, "desc" = new_desc, status = new_status, priority = new_priority WHERE id = task_id;
+END;
+$$;
+
+-- 管理员函数：删除任意任务
+CREATE OR REPLACE FUNCTION admin_delete_task(task_id BIGINT)
+RETURNS void
+SECURITY DEFINER SET search_path = public
+LANGUAGE plpgsql AS $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND is_admin = true) THEN
+    RAISE EXCEPTION 'Access denied';
+  END IF;
+  DELETE FROM tasks WHERE id = task_id;
+END;
+$$;
+
+-- 关闭邮箱验证（让用户名注册立即可用，无需验证邮箱）
+-- 在 Supabase Dashboard > Authentication > Settings 中：
+-- 把 "Confirm email" 关掉 / 或保持开启但用户无需验证也能登录
 ```
 
 ### 3. 配置环境变量

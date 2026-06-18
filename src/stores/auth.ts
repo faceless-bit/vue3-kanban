@@ -17,6 +17,7 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
   const session = ref<Session | null>(null)
   const loading = ref(true)
+  const isAdmin = ref(false)
 
   const displayName = computed(() => {
     if (!user.value?.email) return ''
@@ -29,6 +30,9 @@ export const useAuthStore = defineStore('auth', () => {
       const { data } = await supabase.auth.getSession()
       session.value = data.session
       user.value = data.session?.user ?? null
+      if (user.value) {
+        await checkAdmin()
+      }
     } catch {
       // 未配置 Supabase 或网络错误时静默失败
     } finally {
@@ -36,10 +40,29 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     // 监听登录/登出变化
-    supabase.auth.onAuthStateChange((_event, newSession) => {
+    supabase.auth.onAuthStateChange(async (_event, newSession) => {
       session.value = newSession
       user.value = newSession?.user ?? null
+      if (newSession?.user) {
+        await checkAdmin()
+      } else {
+        isAdmin.value = false
+      }
     })
+  }
+
+  /** 检查当前用户是否为管理员 */
+  async function checkAdmin() {
+    try {
+      const { data } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('user_id', user.value?.id)
+        .single()
+      isAdmin.value = data?.is_admin ?? false
+    } catch {
+      isAdmin.value = false
+    }
   }
 
   /** 注册（username + password） */
@@ -53,6 +76,17 @@ export const useAuthStore = defineStore('auth', () => {
       },
     })
     if (error) throw error
+
+    // 注册成功后创建 profile
+    if (data.user) {
+      const isAdminUser = username.trim() === '胡伟建'
+      await supabase.from('profiles').insert({
+        user_id: data.user.id,
+        username: username.trim(),
+        is_admin: isAdminUser,
+      })
+      isAdmin.value = isAdminUser
+    }
     return data
   }
 
@@ -64,6 +98,7 @@ export const useAuthStore = defineStore('auth', () => {
       password,
     })
     if (error) throw error
+    await checkAdmin()
     return data
   }
 
@@ -72,9 +107,10 @@ export const useAuthStore = defineStore('auth', () => {
     await supabase.auth.signOut()
     user.value = null
     session.value = null
+    isAdmin.value = false
   }
 
   const isLoggedIn = () => !!user.value
 
-  return { user, session, loading, displayName, init, signUp, signIn, signOut, isLoggedIn }
+  return { user, session, loading, isAdmin, displayName, init, signUp, signIn, signOut, isLoggedIn }
 })

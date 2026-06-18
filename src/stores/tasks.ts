@@ -16,9 +16,20 @@ export interface Task {
   created_at: string
 }
 
+export interface AdminUser {
+  uid: string
+  uname: string
+  ucreated_at: string
+}
+
 export const useTasksStore = defineStore('tasks', () => {
   const tasks = ref<Task[]>([])
   const loading = ref(false)
+
+  // ==================== 管理员状态 ====================
+  const adminUsers = ref<AdminUser[]>([])
+  const adminSelectedUserId = ref<string | null>(null)
+  const adminSelectedTasks = ref<Task[]>([])
 
   // ==================== 计算属性 ====================
   const todoTasks = computed(() => tasks.value.filter(t => t.status === 'todo'))
@@ -37,7 +48,7 @@ export const useTasksStore = defineStore('tasks', () => {
     return Math.round((stats.value.done / stats.value.total) * 100)
   })
 
-  // ==================== 数据获取 ====================
+  // ==================== 普通用户：任务 CRUD ====================
   async function fetchTasks() {
     const auth = useAuthStore()
     if (!auth.user) return
@@ -54,7 +65,6 @@ export const useTasksStore = defineStore('tasks', () => {
     loading.value = false
   }
 
-  // ==================== CRUD ====================
   async function addTask(title: string, desc: string, priority: TaskPriority = 'mid') {
     const auth = useAuthStore()
     if (!auth.user) return null
@@ -100,8 +110,70 @@ export const useTasksStore = defineStore('tasks', () => {
     }
   }
 
+  // ==================== 管理员：查看所有用户 ====================
+  async function adminFetchUsers() {
+    const { data, error } = await supabase.rpc('admin_list_users')
+    if (!error && data) {
+      adminUsers.value = data
+    }
+  }
+
+  // ==================== 管理员：查看/修改指定用户任务 ====================
+  async function adminSelectUser(userId: string) {
+    adminSelectedUserId.value = userId
+    const { data, error } = await supabase.rpc('admin_get_user_tasks', {
+      target_user_id: userId,
+    })
+    if (!error && data) {
+      adminSelectedTasks.value = data
+    }
+  }
+
+  async function adminMoveTask(taskId: number, to: TaskStatus) {
+    const task = adminSelectedTasks.value.find(t => t.id === taskId)
+    if (!task) return
+
+    const { error } = await supabase.rpc('admin_update_task', {
+      task_id: taskId,
+      new_title: task.title,
+      new_desc: task.desc,
+      new_status: to,
+      new_priority: task.priority,
+    })
+    if (!error) {
+      task.status = to
+    }
+  }
+
+  async function adminDeleteTask(taskId: number) {
+    const { error } = await supabase.rpc('admin_delete_task', { task_id: taskId })
+    if (!error) {
+      adminSelectedTasks.value = adminSelectedTasks.value.filter(t => t.id !== taskId)
+    }
+  }
+
+  async function adminAddTask(title: string, desc: string, priority: TaskPriority = 'mid') {
+    if (!adminSelectedUserId.value) return null
+
+    const { data, error } = await supabase
+      .from('tasks')
+      .insert({
+        user_id: adminSelectedUserId.value,
+        title,
+        desc,
+        status: 'todo',
+        priority,
+      })
+      .select()
+      .single()
+
+    if (!error && data) {
+      adminSelectedTasks.value.unshift(data)
+    }
+    return data
+  }
+
   // ==================== 数据迁移 ====================
-  /** 将 localStorage 中的旧数据迁移到 Supabase */
   async function migrateFromLocalStorage() {
     const auth = useAuthStore()
     if (!auth.user) return
@@ -139,5 +211,7 @@ export const useTasksStore = defineStore('tasks', () => {
   return {
     tasks, loading, todoTasks, doingTasks, doneTasks, stats, progressPercent,
     fetchTasks, addTask, moveTask, deleteTask, migrateFromLocalStorage,
+    adminUsers, adminSelectedUserId, adminSelectedTasks,
+    adminFetchUsers, adminSelectUser, adminMoveTask, adminDeleteTask, adminAddTask,
   }
 })
