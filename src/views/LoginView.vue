@@ -13,10 +13,6 @@ const submitting = ref(false)
 
 async function handleLogin() {
   error.value = ''
-  if (!username.value.trim() && !password.value) {
-    error.value = '请输入用户名和密码'
-    return
-  }
   if (!username.value.trim()) {
     error.value = '请输入用户名'
     return
@@ -30,15 +26,17 @@ async function handleLogin() {
     await auth.signIn(username.value.trim(), password.value)
     router.replace('/')
   } catch (e: any) {
-    const msg = e.message || ''
-    if (msg.includes('Invalid') || msg.includes('invalid') || msg.includes('credentials')) {
+    const msg = (e.message || '').toLowerCase()
+    if (msg.includes('invalid') || msg.includes('credential') || msg.includes('wrong')) {
       error.value = '用户名或密码错误，请检查后重试'
-    } else if (msg.includes('email') && msg.includes('confirm')) {
-      error.value = '邮箱未验证，请先验证邮箱'
-    } else if (msg.includes('rate')) {
-      error.value = '操作太频繁，请稍后再试'
+    } else if (msg.includes('confirm') || msg.includes('verify')) {
+      error.value = '账户未验证，请重新注册一个'
+    } else if (msg.includes('rate') || msg.includes('limit')) {
+      error.value = '操作太频繁，请稍等几秒再试'
+    } else if (msg.includes('network') || msg.includes('fetch')) {
+      error.value = '网络错误，请检查网络连接后重试'
     } else {
-      error.value = e.message || '登录失败，请重试'
+      error.value = '登录失败：' + (e.message || '请重试')
     }
   } finally {
     submitting.value = false
