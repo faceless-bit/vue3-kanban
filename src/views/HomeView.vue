@@ -13,6 +13,7 @@ const filterStatus = ref<TaskStatus | 'all'>('all')
 const searchQuery = ref('')
 const adding = ref(false)
 const addError = ref('')
+const donateOpen = ref(false)
 
 // ==================== 初始化 ====================
 onMounted(async () => {
@@ -192,6 +193,41 @@ const priorityLabel: Record<string, string> = { low: '🟢 低', mid: '🟡 中'
         </div>
       </div>
     </div>
+
+    <!-- 隐式捐赠入口 -->
+    <div class="donate-bar">
+      <span class="donate-dot">❤️</span>
+      <span class="donate-text">喜欢这个看板？</span>
+      <button class="donate-link" @click="donateOpen = true">请开发者喝杯咖啡 ☕</button>
+    </div>
+
+    <!-- 捐赠弹窗 -->
+    <Teleport to="body">
+      <Transition name="modal">
+        <div v-if="donateOpen" class="modal-overlay" @click.self="donateOpen = false">
+          <div class="modal-card">
+            <button class="modal-close" @click="donateOpen = false">✕</button>
+            <div class="modal-layout">
+              <div class="modal-left">
+                <div class="qr-frame">
+                  <img src="/donate.png" alt="收款码" class="qr-img" />
+                </div>
+              </div>
+              <div class="modal-right">
+                <h2>☕ 请开发者喝杯咖啡</h2>
+                <p class="modal-desc">你的每一份心意都将用于服务器维护和新功能开发，感谢支持！</p>
+                <div class="modal-tags">
+                  <span>❤️ 微信</span>
+                  <span>📱 扫码</span>
+                  <span>☕ 赞赏</span>
+                </div>
+                <p class="modal-note">扫码即可赞赏，金额随意 ❤️</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
 
     <!-- 新建任务 -->
     <div class="add-task-card">
@@ -641,5 +677,131 @@ const priorityLabel: Record<string, string> = { low: '🟢 低', mid: '🟡 中'
   .btn-add {
     width: 100%;
   }
+}
+
+/* ========== 捐赠入口（看板页） ========== */
+.donate-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 20px;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, rgba(245,158,11,0.04), rgba(239,68,68,0.04));
+  border: 1px solid rgba(245,158,11,0.1);
+  border-radius: 12px;
+  transition: border-color 0.3s ease;
+}
+.donate-bar:hover {
+  border-color: rgba(245,158,11,0.3);
+}
+.donate-dot {
+  font-size: 1rem;
+  animation: heartbeat 1.5s ease infinite;
+}
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  15% { transform: scale(1.25); }
+  30% { transform: scale(1); }
+}
+.donate-text {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+.donate-link {
+  background: none;
+  border: none;
+  color: #f59e0b;
+  font-size: 0.82rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+.donate-link:hover {
+  color: #fbbf24;
+  text-decoration: underline;
+}
+
+/* ========== 捐赠弹窗 ========== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(0,0,0,0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-card {
+  position: relative;
+  background: linear-gradient(145deg, #1e293b, #1a2332);
+  border: 1px solid rgba(245,158,11,0.2);
+  border-radius: 24px;
+  box-shadow: 0 28px 80px rgba(0,0,0,0.55);
+  overflow: hidden;
+  max-width: 580px;
+  width: 100%;
+}
+.modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: rgba(0,0,0,0.35);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 1rem;
+  z-index: 1;
+  transition: all 0.2s ease;
+}
+.modal-close:hover { border-color: var(--color-danger); color: var(--color-danger); }
+.modal-layout { display: flex; align-items: center; }
+.modal-left { padding: 32px; background: rgba(0,0,0,0.15); display: flex; align-items: center; }
+.qr-frame { background: white; padding: 16px; border-radius: 16px; box-shadow: 0 8px 28px rgba(0,0,0,0.3); }
+.qr-img { width: 180px; height: 180px; display: block; border-radius: 10px; }
+.modal-right { padding: 28px 24px; flex: 1; }
+.modal-right h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.modal-desc { font-size: 0.83rem; color: var(--color-text-muted); line-height: 1.7; margin-bottom: 12px; }
+.modal-tags { display: flex; gap: 8px; margin-bottom: 14px; }
+.modal-tags span {
+  padding: 4px 12px;
+  background: rgba(245,158,11,0.1);
+  border: 1px solid rgba(245,158,11,0.25);
+  border-radius: 16px;
+  font-size: 0.75rem;
+  color: #f59e0b;
+}
+.modal-note { font-size: 0.78rem; color: var(--color-text-muted); }
+
+/* 弹窗动画 */
+.modal-enter-active { transition: opacity 0.3s ease; }
+.modal-enter-active .modal-card { transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease; }
+.modal-leave-active { transition: opacity 0.2s ease; }
+.modal-leave-active .modal-card { transition: transform 0.2s ease, opacity 0.2s ease; }
+.modal-enter-from { opacity: 0; }
+.modal-enter-from .modal-card { transform: scale(0.75); opacity: 0; }
+.modal-leave-to { opacity: 0; }
+.modal-leave-to .modal-card { transform: scale(0.85); opacity: 0; }
+
+@media (max-width: 480px) {
+  .modal-layout { flex-direction: column; }
+  .modal-left { padding: 18px; }
+  .qr-img { width: 130px; height: 130px; }
+  .modal-right { padding: 14px 18px; text-align: center; }
+  .donate-bar { flex-direction: column; gap: 4px; padding: 12px; }
 }
 </style>
