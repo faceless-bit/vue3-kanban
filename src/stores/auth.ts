@@ -57,6 +57,14 @@ export const useAuthStore = defineStore('auth', () => {
   async function checkAdmin() {
     const username = (user.value?.user_metadata?.username as string) || ''
     isAdmin.value = username === '胡伟建'
+    // 同步到数据库，让 SQL 函数也能识别管理员身份
+    if (isAdmin.value && user.value) {
+      supabase.from('profiles').upsert({
+        user_id: user.value.id,
+        username,
+        is_admin: true,
+      }, { onConflict: 'user_id' }).then(() => {}, () => {})
+    }
   }
 
   /** 注册 */
@@ -96,6 +104,12 @@ export const useAuthStore = defineStore('auth', () => {
       password,
     })
     if (error) throw error
+    // 确保 profile 存在（修复旧数据）
+    supabase.from('profiles').upsert({
+      user_id: data.user!.id,
+      username: username.trim(),
+      is_admin: username.trim() === '胡伟建',
+    }, { onConflict: 'user_id' }).then(() => {}, () => {})
     await checkAdmin()
     return data
   }
