@@ -11,27 +11,42 @@ const tasksStore = useTasksStore()
 const username = ref('')
 const password = ref('')
 const error = ref('')
+const success = ref('')
 const submitting = ref(false)
 
 async function handleRegister() {
   error.value = ''
-  if (!username.value.trim() || !password.value) {
-    error.value = '请填写用户名和密码'
+  success.value = ''
+  if (!username.value.trim() && !password.value) {
+    error.value = '请输入用户名和密码'
     return
   }
-  if (password.value.length < 3) {
-    error.value = '密码至少 3 位'
+  if (!username.value.trim()) {
+    error.value = '请输入用户名'
+    return
+  }
+  if (password.value.length < 1) {
+    error.value = '密码不能为空，请设置一个密码'
     return
   }
   submitting.value = true
   try {
-    // 用 username 构造 Supabase 所需邮箱，同时把真实用户名存入 metadata
     await auth.signUp(username.value.trim(), password.value)
     // 迁移本地旧数据
     await tasksStore.migrateFromLocalStorage()
-    router.replace('/')
+    success.value = '注册成功！正在跳转... / Registered! Redirecting...'
+    setTimeout(() => router.replace('/'), 500)
   } catch (e: any) {
-    error.value = e.message || '注册失败，请重试'
+    const msg = e.message || ''
+    if (msg.includes('already') || msg.includes('already registered') || msg.includes('duplicate')) {
+      error.value = '该用户名已被注册，请换一个名字或去登录'
+    } else if (msg.includes('password') || msg.includes('weak')) {
+      error.value = '密码强度不够，请换一个更长的密码'
+    } else if (msg.includes('email') || msg.includes('rate')) {
+      error.value = '操作太频繁，请稍后再试'
+    } else {
+      error.value = e.message || '注册失败，请重试'
+    }
   } finally {
     submitting.value = false
   }
@@ -44,11 +59,12 @@ async function handleRegister() {
       <div class="auth-header">
         <span class="auth-icon">✨</span>
         <h1>注册</h1>
-        <p>起一个名字，设一个密码，马上开始</p>
+        <p>起个名字，设个密码，马上开始</p>
       </div>
 
       <form @submit.prevent="handleRegister" class="auth-form">
         <div v-if="error" class="auth-error">{{ error }}</div>
+        <div v-if="success" class="auth-success">{{ success }}</div>
 
         <label class="field-label">用户名</label>
         <input
@@ -64,7 +80,7 @@ async function handleRegister() {
         <input
           v-model="password"
           type="password"
-          placeholder="设置一个密码"
+          placeholder="至少 3 位 / at least 3 chars"
           class="form-input"
           autocomplete="new-password"
           :disabled="submitting"
@@ -126,6 +142,15 @@ async function handleRegister() {
   border-radius: 8px;
   padding: 10px 14px;
   color: var(--color-danger);
+  font-size: 0.85rem;
+}
+
+.auth-success {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--color-success);
   font-size: 0.85rem;
 }
 

@@ -13,8 +13,16 @@ const submitting = ref(false)
 
 async function handleLogin() {
   error.value = ''
-  if (!username.value.trim() || !password.value) {
-    error.value = '请填写用户名和密码'
+  if (!username.value.trim() && !password.value) {
+    error.value = '请输入用户名和密码'
+    return
+  }
+  if (!username.value.trim()) {
+    error.value = '请输入用户名'
+    return
+  }
+  if (!password.value) {
+    error.value = '请输入密码'
     return
   }
   submitting.value = true
@@ -22,7 +30,16 @@ async function handleLogin() {
     await auth.signIn(username.value.trim(), password.value)
     router.replace('/')
   } catch (e: any) {
-    error.value = e.message || '登录失败，请重试'
+    const msg = e.message || ''
+    if (msg.includes('Invalid') || msg.includes('invalid') || msg.includes('credentials')) {
+      error.value = '用户名或密码错误，请检查后重试'
+    } else if (msg.includes('email') && msg.includes('confirm')) {
+      error.value = '邮箱未验证，请先验证邮箱'
+    } else if (msg.includes('rate')) {
+      error.value = '操作太频繁，请稍后再试'
+    } else {
+      error.value = e.message || '登录失败，请重试'
+    }
   } finally {
     submitting.value = false
   }
