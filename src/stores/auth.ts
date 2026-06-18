@@ -11,7 +11,7 @@ function emailFrom(username: string): string {
     hash = ((hash << 5) - hash) + username.charCodeAt(i)
     hash |= 0
   }
-  return 'u' + Math.abs(hash).toString(36) + '@kb.usr'
+  return 'u' + Math.abs(hash).toString(36) + '@kb.test'
 }
 
 export const useAuthStore = defineStore('auth', () => {
@@ -62,6 +62,7 @@ export const useAuthStore = defineStore('auth', () => {
   /** 注册 */
   async function signUp(username: string, password: string) {
     const email = emailFrom(username)
+    console.log('signUp: 准备注册, username=', username, 'email=', email)
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -69,7 +70,11 @@ export const useAuthStore = defineStore('auth', () => {
         data: { username: username.trim() },
       },
     })
-    if (error) throw error
+    if (error) {
+      console.error('signUp 失败:', error.message, error.code, error)
+      throw error
+    }
+    console.log('signUp 成功:', data.user?.id)
 
     if (data.user) {
       isAdmin.value = username.trim() === '胡伟建'
