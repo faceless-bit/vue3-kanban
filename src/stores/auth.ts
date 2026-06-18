@@ -55,21 +55,8 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function checkAdmin() {
-    // 核心判断：metadata 里 username 是否为「胡伟建」
     const username = (user.value?.user_metadata?.username as string) || ''
     isAdmin.value = username === '胡伟建'
-    console.log('checkAdmin: username =', username, 'isAdmin =', isAdmin.value)
-
-    // 同时同步 profiles 表（失败不影响结果）
-    try {
-      await supabase.from('profiles').upsert({
-        user_id: user.value!.id,
-        username,
-        is_admin: isAdmin.value,
-      }, { onConflict: 'user_id' })
-    } catch {
-      // 静默
-    }
   }
 
   /** 注册 */
@@ -85,13 +72,13 @@ export const useAuthStore = defineStore('auth', () => {
     if (error) throw error
 
     if (data.user) {
-      const isAdminUser = username.trim() === '胡伟建'
-      await supabase.from('profiles').insert({
+      isAdmin.value = username.trim() === '胡伟建'
+      // profiles 异步写入，不阻塞登录
+      supabase.from('profiles').upsert({
         user_id: data.user.id,
         username: username.trim(),
-        is_admin: isAdminUser,
-      })
-      isAdmin.value = isAdminUser
+        is_admin: isAdmin.value,
+      }, { onConflict: 'user_id' }).catch(() => {})
     }
     return data
   }

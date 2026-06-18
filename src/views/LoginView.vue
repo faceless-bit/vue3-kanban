@@ -2,11 +2,9 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { useTasksStore } from '@/stores/tasks'
 
 const router = useRouter()
 const auth = useAuthStore()
-const tasksStore = useTasksStore()
 
 const username = ref('')
 const password = ref('')
@@ -60,7 +58,6 @@ async function handleLogin() {
   try {
     statusText.value = '账户不存在，自动注册中...'
     await auth.signUp(name, pass)
-    await tasksStore.migrateFromLocalStorage()
     router.replace('/')
   } catch (e: any) {
     error.value = '自动注册失败：' + (e.message || '请重试')

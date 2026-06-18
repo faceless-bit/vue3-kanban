@@ -16,9 +16,6 @@ const addError = ref('')
 
 // ==================== 初始化 ====================
 onMounted(async () => {
-  // 尝试迁移 localStorage 旧数据
-  await store.migrateFromLocalStorage()
-  // 从 Supabase 拉取任务
   await store.fetchTasks()
 })
 
