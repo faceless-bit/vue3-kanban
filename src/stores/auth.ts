@@ -55,34 +55,20 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function checkAdmin() {
+    // 核心判断：metadata 里 username 是否为「胡伟建」
+    const username = (user.value?.user_metadata?.username as string) || ''
+    isAdmin.value = username === '胡伟建'
+    console.log('checkAdmin: username =', username, 'isAdmin =', isAdmin.value)
+
+    // 同时同步 profiles 表（失败不影响结果）
     try {
-      const { data } = await supabase
-        .from('profiles')
-        .select('is_admin')
-        .eq('user_id', user.value?.id)
-        .single()
-      isAdmin.value = data?.is_admin ?? false
-      console.log('checkAdmin: 从profiles读取 is_admin =', isAdmin.value)
-    } catch (e: any) {
-      console.log('checkAdmin: profiles不存在或不完整，自动修复...', e?.message)
-      try {
-        const username = (user.value?.user_metadata?.username as string) || ''
-        const isAdminUser = username === '胡伟建'
-        console.log('checkAdmin: 自动建profile, username=', username, 'isAdmin=', isAdminUser)
-        const { error: upsertErr } = await supabase.from('profiles').upsert({
-          user_id: user.value!.id,
-          username,
-          is_admin: isAdminUser,
-        }, { onConflict: 'user_id' })
-        if (upsertErr) {
-          console.error('checkAdmin: upsert失败', upsertErr.message)
-        }
-        isAdmin.value = isAdminUser
-        console.log('checkAdmin: 修复后 is_admin =', isAdmin.value)
-      } catch (e2: any) {
-        console.error('checkAdmin: 自动修复失败', e2?.message)
-        isAdmin.value = false
-      }
+      await supabase.from('profiles').upsert({
+        user_id: user.value!.id,
+        username,
+        is_admin: isAdmin.value,
+      }, { onConflict: 'user_id' })
+    } catch {
+      // 静默
     }
   }
 
