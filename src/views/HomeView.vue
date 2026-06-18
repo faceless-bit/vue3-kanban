@@ -11,6 +11,8 @@ const newDesc = ref('')
 const newPriority = ref<TaskPriority>('mid')
 const filterStatus = ref<TaskStatus | 'all'>('all')
 const searchQuery = ref('')
+const adding = ref(false)
+const addError = ref('')
 
 // ==================== 初始化 ====================
 onMounted(async () => {
@@ -46,12 +48,25 @@ function getColumnTasks(status: TaskStatus) {
 
 // ==================== 操作 ====================
 async function addTask() {
+  addError.value = ''
   const title = newTitle.value.trim()
   if (!title) return
-  await store.addTask(title, newDesc.value.trim(), newPriority.value)
-  newTitle.value = ''
-  newDesc.value = ''
-  newPriority.value = 'mid'
+  adding.value = true
+  try {
+    const result = await store.addTask(title, newDesc.value.trim(), newPriority.value)
+    if (result) {
+      newTitle.value = ''
+      newDesc.value = ''
+      newPriority.value = 'mid'
+    } else {
+      addError.value = '添加失败，请检查网络后重试'
+    }
+  } catch (e: any) {
+    addError.value = '添加失败：' + (e.message || '未知错误')
+    console.error('添加任务失败:', e)
+  } finally {
+    adding.value = false
+  }
 }
 
 function moveTask(id: number, to: TaskStatus) {
@@ -184,6 +199,7 @@ const priorityLabel: Record<string, string> = { low: '🟢 低', mid: '🟡 中'
     <!-- 新建任务 -->
     <div class="add-task-card">
       <h3>✏️ 新建任务</h3>
+      <div v-if="addError" class="add-error">{{ addError }}</div>
       <form @submit.prevent="addTask" class="add-form">
         <input
           v-model="newTitle"
@@ -191,6 +207,7 @@ const priorityLabel: Record<string, string> = { low: '🟢 低', mid: '🟡 中'
           placeholder="任务标题 *"
           class="form-input"
           maxlength="60"
+          :disabled="adding"
         />
         <input
           v-model="newDesc"
@@ -198,15 +215,16 @@ const priorityLabel: Record<string, string> = { low: '🟢 低', mid: '🟡 中'
           placeholder="任务描述（可选）"
           class="form-input"
           maxlength="200"
+          :disabled="adding"
         />
         <div class="form-row">
-          <select v-model="newPriority" class="form-select">
+          <select v-model="newPriority" class="form-select" :disabled="adding">
             <option value="low">🟢 低优先级</option>
             <option value="mid">🟡 中优先级</option>
             <option value="high">🔴 高优先级</option>
           </select>
-          <button type="submit" class="btn-add" :disabled="!newTitle.trim()">
-            ➕ 添加任务
+          <button type="submit" class="btn-add" :disabled="!newTitle.trim() || adding">
+            {{ adding ? '⏳ 添加中...' : '➕ 添加任务' }}
           </button>
         </div>
       </form>
@@ -537,6 +555,16 @@ const priorityLabel: Record<string, string> = { low: '🟢 低', mid: '🟡 中'
 .add-task-card h3 {
   font-size: 1.05rem;
   margin-bottom: 16px;
+}
+
+.add-error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--color-danger);
+  font-size: 0.85rem;
+  margin-bottom: 12px;
 }
 
 .add-form {

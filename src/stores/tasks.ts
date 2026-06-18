@@ -89,7 +89,10 @@ export const useTasksStore = defineStore('tasks', () => {
 
   async function addTask(title: string, desc: string, priority: TaskPriority = 'mid') {
     const auth = useAuthStore()
-    if (!auth.user) return null
+    if (!auth.user) {
+      console.error('addTask: 未登录')
+      return null
+    }
 
     const { data, error } = await supabase
       .from('tasks')
@@ -103,7 +106,11 @@ export const useTasksStore = defineStore('tasks', () => {
       .select()
       .single()
 
-    if (!error && data) {
+    if (error) {
+      console.error('addTask 数据库错误:', error.message, error.code, error.details)
+      throw new Error(error.message)
+    }
+    if (data) {
       tasks.value.unshift(data)
     }
     return data
