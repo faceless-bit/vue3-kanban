@@ -3,14 +3,15 @@ import { defineStore } from 'pinia'
 import { supabase } from '@/lib/supabase'
 import type { User, Session } from '@supabase/supabase-js'
 
-/** 把 username 转为 Supabase 登录用的虚拟邮箱 */
+/** 把 username 转为纯英文数字的虚拟邮箱（绕过 Supabase 邮箱格式验证） */
 function emailFrom(username: string): string {
-  return username.trim().toLowerCase() + '@kanban.local'
-}
-
-/** 从 Supabase email 反推显示用的用户名 */
-export function usernameFrom(email: string): string {
-  return email.replace('@kanban.local', '')
+  // 对用户名做简单哈希，生成合法 ASCII 邮箱地址
+  let hash = 0
+  for (let i = 0; i < username.length; i++) {
+    hash = ((hash << 5) - hash) + username.charCodeAt(i)
+    hash |= 0
+  }
+  return 'u' + Math.abs(hash).toString(36) + '@kbn.local'
 }
 
 export const useAuthStore = defineStore('auth', () => {
@@ -19,9 +20,12 @@ export const useAuthStore = defineStore('auth', () => {
   const loading = ref(true)
   const isAdmin = ref(false)
 
+  /** 显示名：优先从注册时存的 metadata 读取 */
   const displayName = computed(() => {
-    if (!user.value?.email) return ''
-    return usernameFrom(user.value.email)
+    if (user.value?.user_metadata?.username) {
+      return user.value.user_metadata.username as string
+    }
+    return ''
   })
 
   /** 初始化：恢复 session 并监听状态变化 */
@@ -39,7 +43,6 @@ export const useAuthStore = defineStore('auth', () => {
       loading.value = false
     }
 
-    // 监听登录/登出变化
     supabase.auth.onAuthStateChange(async (_event, newSession) => {
       session.value = newSession
       user.value = newSession?.user ?? null
@@ -51,7 +54,6 @@ export const useAuthStore = defineStore('auth', () => {
     })
   }
 
-  /** 检查当前用户是否为管理员 */
   async function checkAdmin() {
     try {
       const { data } = await supabase
@@ -65,19 +67,18 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  /** 注册（username + password） */
+  /** 注册 */
   async function signUp(username: string, password: string) {
     const email = emailFrom(username)
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { username },
+        data: { username: username.trim() },
       },
     })
     if (error) throw error
 
-    // 注册成功后创建 profile
     if (data.user) {
       const isAdminUser = username.trim() === '胡伟建'
       await supabase.from('profiles').insert({
@@ -90,7 +91,7 @@ export const useAuthStore = defineStore('auth', () => {
     return data
   }
 
-  /** 登录（username + password） */
+  /** 登录 */
   async function signIn(username: string, password: string) {
     const email = emailFrom(username)
     const { data, error } = await supabase.auth.signInWithPassword({
