@@ -63,7 +63,19 @@ export const useAuthStore = defineStore('auth', () => {
         .single()
       isAdmin.value = data?.is_admin ?? false
     } catch {
-      isAdmin.value = false
+      // profile 不存在（比如重建过表），自动补建
+      try {
+        const username = (user.value?.user_metadata?.username as string) || ''
+        const isAdminUser = username === '胡伟建'
+        await supabase.from('profiles').upsert({
+          user_id: user.value!.id,
+          username,
+          is_admin: isAdminUser,
+        }, { onConflict: 'user_id' })
+        isAdmin.value = isAdminUser
+      } catch {
+        isAdmin.value = false
+      }
     }
   }
 
