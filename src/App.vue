@@ -77,6 +77,10 @@ async function handleLogout() {
   --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* 性能优化 */
+img { content-visibility: auto; }
+.card, .task-card, .board-col, [data-section] { will-change: transform, opacity; }
+
 * {
   margin: 0;
   padding: 0;
