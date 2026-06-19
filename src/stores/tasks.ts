@@ -39,20 +39,6 @@ export const useTasksStore = defineStore('tasks', () => {
   const adminSelectedUserId = ref<string | null>(null)
   const adminSelectedTasks = ref<Task[]>([])
 
-  // -- localStorage helpers (无登录时的回退) --
-  const LS_KEY = 'demo-tasks'
-  let demoIdCounter = 1
-
-  function loadFromLocal(): Task[] {
-    try {
-      const raw = localStorage.getItem(LS_KEY)
-      return raw ? JSON.parse(raw) : []
-    } catch { return [] }
-  }
-  function saveToLocal(list: Task[]) {
-    try { localStorage.setItem(LS_KEY, JSON.stringify(list)) } catch {}
-  }
-
   const todoTasks = computed(() => tasks.value.filter(t => t.status === 'todo'))
   const doingTasks = computed(() => tasks.value.filter(t => t.status === 'doing'))
   const doneTasks = computed(() => tasks.value.filter(t => t.status === 'done'))
@@ -71,22 +57,7 @@ export const useTasksStore = defineStore('tasks', () => {
 
   async function fetchTasks() {
     const auth = useAuthStore()
-    // 无登录：localStorage 模式
-    if (!auth.user) {
-      loading.value = true
-      let local = loadFromLocal()
-      if (local.length === 0) {
-        // 填入演示数据
-        local = demoTasks('demo').map((t, i) => ({ ...t, id: i + 1 } as Task))
-        demoIdCounter = local.length + 1
-        saveToLocal(local)
-      } else {
-        demoIdCounter = Math.max(...local.map(t => t.id), 0) + 1
-      }
-      tasks.value = local
-      loading.value = false
-      return
-    }
+    if (!auth.user) return
 
     loading.value = true
     const { data, error } = await supabase
@@ -117,20 +88,9 @@ export const useTasksStore = defineStore('tasks', () => {
 
   async function addTask(title: string, description: string, priority: TaskPriority = 'mid') {
     const auth = useAuthStore()
-    // 无登录：localStorage 模式
     if (!auth.user) {
-      const task: Task = {
-        id: demoIdCounter++,
-        user_id: 'demo',
-        title,
-        description,
-        status: 'todo',
-        priority,
-        created_at: new Date().toISOString(),
-      }
-      tasks.value.unshift(task)
-      saveToLocal(tasks.value)
-      return task
+      console.error('添加任务失败：未登录')
+      throw new Error('请先登录')
     }
 
     const { data, error } = await supabase
@@ -156,13 +116,6 @@ export const useTasksStore = defineStore('tasks', () => {
   }
 
   async function moveTask(id: number, to: TaskStatus) {
-    const auth = useAuthStore()
-    if (!auth.user) {
-      const task = tasks.value.find(t => t.id === id)
-      if (task) { task.status = to; saveToLocal(tasks.value) }
-      return
-    }
-
     const { error } = await supabase
       .from('tasks')
       .update({ status: to })
@@ -177,13 +130,6 @@ export const useTasksStore = defineStore('tasks', () => {
   }
 
   async function deleteTask(id: number) {
-    const auth = useAuthStore()
-    if (!auth.user) {
-      tasks.value = tasks.value.filter(t => t.id !== id)
-      saveToLocal(tasks.value)
-      return
-    }
-
     const { error } = await supabase
       .from('tasks')
       .delete()
