@@ -1,3 +1,7 @@
+/**
+ * 路由配置
+ * 首页看板、关于、登录、管理员页面
+ */
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
@@ -7,41 +11,32 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: () => import('../views/HomeView.vue'),
-      meta: { requiresAuth: true },
+      component: () => import('@/views/HomeView.vue'),
     },
     {
       path: '/login',
       name: 'login',
-      component: () => import('../views/LoginView.vue'),
-      meta: { guest: true },
-    },
-    {
-      path: '/register',
-      name: 'register',
-      component: () => import('../views/RegisterView.vue'),
-      meta: { guest: true },
+      component: () => import('@/views/LoginView.vue'),
     },
     {
       path: '/admin',
       name: 'admin',
-      component: () => import('../views/AdminView.vue'),
-      meta: { requiresAuth: true, requiresAdmin: true },
+      component: () => import('@/views/AdminView.vue'),
+      meta: { requiresAdmin: true },
     },
     {
       path: '/about',
       name: 'about',
-      component: () => import('../views/AboutView.vue'),
+      component: () => import('@/views/AboutView.vue'),
     },
   ],
 })
 
-// 路由守卫 — 当前已去掉登录限制，允许直接浏览
-router.beforeEach((to, _from) => {
-  const auth = useAuthStore()
-
-  if (to.meta.requiresAdmin && !auth.isAdmin) {
-    return { name: 'home' }
+/** 仅限制管理员页面 */
+router.beforeEach((to) => {
+  if (to.meta.requiresAdmin) {
+    const auth = useAuthStore()
+    if (!auth.isAdmin) return { name: 'home' }
   }
 })
 

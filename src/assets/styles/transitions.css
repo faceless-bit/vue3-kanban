@@ -1,0 +1,46 @@
+/* ================================================================
+   共享动画与过渡
+   使用 Vue <Transition> 组件配合 name 属性即可
+   ================================================================ */
+
+/* ---- 页面切换 ---- */
+.page-enter-active,
+.page-leave-active {
+  transition: opacity var(--duration-normal) var(--ease-out),
+              transform var(--duration-normal) var(--ease-out);
+}
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+/* ---- 淡入 ---- */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity var(--duration-normal) var(--ease-out);
+}
+.fade-enter-from,
+.fade-leave-to { opacity: 0; }
+
+/* ---- 缩放弹入 ---- */
+.scale-enter-active { transition: all var(--duration-slow) var(--ease-out); }
+.scale-leave-active { transition: all var(--duration-fast) var(--ease-out); }
+.scale-enter-from { opacity: 0; transform: scale(0.9); }
+.scale-leave-to { opacity: 0; transform: scale(0.95); }
+
+/* ---- 列表动画 ---- */
+.list-enter-active { transition: all var(--duration-normal) var(--ease-out); }
+.list-leave-active { transition: all var(--duration-fast) var(--ease-out); }
+.list-enter-from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+.list-leave-to { opacity: 0; transform: translateX(16px); }
+.list-move { transition: transform var(--duration-normal) var(--ease-out); }
+
+/* ---- 滑入 ---- */
+.slide-up-enter-active { transition: all var(--duration-slow) var(--ease-out); }
+.slide-up-leave-active { transition: all var(--duration-fast) var(--ease-out); }
+.slide-up-enter-from { opacity: 0; transform: translateY(12px); }
+.slide-up-leave-to { opacity: 0; transform: translateY(-8px); }

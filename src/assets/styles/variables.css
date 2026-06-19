@@ -1,0 +1,98 @@
+/* ================================================================
+   CSS 自定义属性 — 深/浅色双主题
+   切换方式：body 上切换 [data-theme="dark"] / [data-theme="light"]
+   ================================================================ */
+
+/* ---- 深色主题（默认） ---- */
+:root,
+[data-theme='dark'] {
+  /* 背景层级 */
+  --bg-root: #0a0a0a;
+  --bg-surface: #141414;
+  --bg-surface-hover: #1f1f1f;
+  --bg-elevated: #1a1a1a;
+
+  /* 边框 */
+  --border-default: #2a2a2a;
+  --border-hover: #3a3a3a;
+
+  /* 文字 */
+  --text-primary: #ededed;
+  --text-secondary: #888888;
+  --text-tertiary: #5a5a5a;
+
+  /* 主色调 */
+  --accent: #0070f3;
+  --accent-hover: #005ad4;
+  --accent-muted: rgba(0, 112, 243, 0.08);
+  --accent-glow: rgba(0, 112, 243, 0.15);
+
+  /* 语义色 */
+  --green: #0cce6b;
+  --green-muted: rgba(12, 206, 107, 0.1);
+  --amber: #f5a623;
+  --amber-muted: rgba(245, 166, 35, 0.1);
+  --red: #ff4d4d;
+  --red-muted: rgba(255, 77, 77, 0.1);
+
+  /* 阴影 */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.5);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.6);
+
+  /* 圆角 */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  /* 间距 */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+
+  /* 排版 */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+
+  /* 动画 */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+}
+
+/* ---- 浅色主题 ---- */
+[data-theme='light'] {
+  --bg-root: #fafafa;
+  --bg-surface: #ffffff;
+  --bg-surface-hover: #f5f5f5;
+  --bg-elevated: #ffffff;
+
+  --border-default: #e5e5e5;
+  --border-hover: #d4d4d4;
+
+  --text-primary: #171717;
+  --text-secondary: #737373;
+  --text-tertiary: #a3a3a3;
+
+  --accent: #0070f3;
+  --accent-hover: #005ad4;
+  --accent-muted: rgba(0, 112, 243, 0.06);
+  --accent-glow: rgba(0, 112, 243, 0.1);
+
+  --green: #0cce6b;
+  --green-muted: rgba(12, 206, 107, 0.08);
+  --amber: #f5a623;
+  --amber-muted: rgba(245, 166, 35, 0.08);
+  --red: #ff4d4d;
+  --red-muted: rgba(255, 77, 77, 0.08);
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
+}
