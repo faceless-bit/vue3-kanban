@@ -18,7 +18,6 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null)
   const session = ref<Session | null>(null)
   const loading = ref(true)
-  const isAdmin = ref(false)
 
   /** 显示名：优先从注册时存的 metadata 读取 */
   const displayName = computed(() => {
@@ -34,9 +33,6 @@ export const useAuthStore = defineStore('auth', () => {
       const { data } = await supabase.auth.getSession()
       session.value = data.session
       user.value = data.session?.user ?? null
-      if (user.value) {
-        await checkAdmin()
-      }
     } catch {
       // 未配置 Supabase 或网络错误时静默失败
     } finally {
@@ -46,25 +42,7 @@ export const useAuthStore = defineStore('auth', () => {
     supabase.auth.onAuthStateChange(async (_event, newSession) => {
       session.value = newSession
       user.value = newSession?.user ?? null
-      if (newSession?.user) {
-        await checkAdmin()
-      } else {
-        isAdmin.value = false
-      }
     })
-  }
-
-  async function checkAdmin() {
-    const username = (user.value?.user_metadata?.username as string) || ''
-    isAdmin.value = username === '胡伟建'
-    // 同步到数据库，让 SQL 函数也能识别管理员身份
-    if (isAdmin.value && user.value) {
-      supabase.from('profiles').upsert({
-        user_id: user.value.id,
-        username,
-        is_admin: true,
-      }, { onConflict: 'user_id' }).then(() => {}, () => {})
-    }
   }
 
   /** 注册 */
@@ -85,12 +63,10 @@ export const useAuthStore = defineStore('auth', () => {
     console.log('signUp 成功:', data.user?.id)
 
     if (data.user) {
-      isAdmin.value = username.trim() === '胡伟建'
       // profiles 异步写入，不阻塞登录
       supabase.from('profiles').upsert({
         user_id: data.user.id,
         username: username.trim(),
-        is_admin: isAdmin.value,
       }, { onConflict: 'user_id' }).then(() => {}, () => {})
     }
     return data
@@ -108,9 +84,7 @@ export const useAuthStore = defineStore('auth', () => {
     supabase.from('profiles').upsert({
       user_id: data.user!.id,
       username: username.trim(),
-      is_admin: username.trim() === '胡伟建',
     }, { onConflict: 'user_id' }).then(() => {}, () => {})
-    await checkAdmin()
     return data
   }
 
@@ -119,10 +93,9 @@ export const useAuthStore = defineStore('auth', () => {
     await supabase.auth.signOut()
     user.value = null
     session.value = null
-    isAdmin.value = false
   }
 
   const isLoggedIn = () => !!user.value
 
-  return { user, session, loading, isAdmin, displayName, init, signUp, signIn, signOut, isLoggedIn }
+  return { user, session, loading, displayName, init, signUp, signIn, signOut, isLoggedIn }
 })

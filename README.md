@@ -18,7 +18,6 @@
 | 🌙 暗色主题 | 深色科技风 UI，护眼暗色模式 |
 | 📱 响应式 | 适配手机、平板、桌面三端 |
 | ✨ 动画过渡 | 页面切换淡入淡出，卡片进出弹性动画 |
-| 🛡️ 管理后台 | 管理员查看/管理所有用户任务 |
 | 📲 PWA | 浏览器一键安装到桌面，离线可用 |
 | 🤖 Android App | Capacitor 打包原生 APK，下载即装 |
 
@@ -72,63 +71,11 @@ CREATE TABLE profiles (
   id         BIGSERIAL PRIMARY KEY,
   user_id    UUID UNIQUE NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   username   TEXT NOT NULL,
-  is_admin   BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "users_read_own_profile" ON profiles FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "users_insert_own_profile" ON profiles FOR INSERT WITH CHECK (auth.uid() = user_id);
-
--- 管理员函数
-CREATE OR REPLACE FUNCTION admin_list_users()
-RETURNS TABLE(uid UUID, uname TEXT, ucreated_at TIMESTAMPTZ)
-SECURITY DEFINER SET search_path = public
-LANGUAGE plpgsql AS $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND is_admin = true) THEN
-    RAISE EXCEPTION 'Access denied';
-  END IF;
-  RETURN QUERY SELECT p.user_id, p.username, p.created_at FROM profiles p ORDER BY p.created_at DESC;
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION admin_get_user_tasks(target_user_id UUID)
-RETURNS SETOF tasks
-SECURITY DEFINER SET search_path = public
-LANGUAGE plpgsql AS $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND is_admin = true) THEN
-    RAISE EXCEPTION 'Access denied';
-  END IF;
-  RETURN QUERY SELECT * FROM tasks WHERE user_id = target_user_id ORDER BY created_at DESC;
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION admin_update_task(
-  task_id BIGINT, new_title TEXT, new_desc TEXT,
-  new_status TEXT, new_priority TEXT
-) RETURNS void
-SECURITY DEFINER SET search_path = public
-LANGUAGE plpgsql AS $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND is_admin = true) THEN
-    RAISE EXCEPTION 'Access denied';
-  END IF;
-  UPDATE tasks SET title = new_title, description = new_desc, status = new_status, priority = new_priority WHERE id = task_id;
-END;
-$$;
-
-CREATE OR REPLACE FUNCTION admin_delete_task(task_id BIGINT)
-RETURNS void
-SECURITY DEFINER SET search_path = public
-LANGUAGE plpgsql AS $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM profiles WHERE user_id = auth.uid() AND is_admin = true) THEN
-    RAISE EXCEPTION 'Access denied';
-  END IF;
-  DELETE FROM tasks WHERE id = task_id;
-END;
-$$;
 ```
 
 ### 3. 配置并启动
@@ -205,7 +152,6 @@ src/
 │   ├── HomeView.vue             # 看板主页（统计+三列+搜索+新建）
 │   ├── LoginView.vue            # 登录页（新用户自动注册）
 │   ├── RegisterView.vue         # 注册页
-│   ├── AdminView.vue            # 管理后台
 │   └── AboutView.vue            # 关于页
 ├── router/
 │   └── index.ts                 # 路由配置 + 认证守卫

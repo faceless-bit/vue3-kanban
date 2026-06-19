@@ -29,10 +29,6 @@ async function handleLogout() {
             <span class="nav-icon"><AppIcon name="info" :size="18" /></span>
             关于
           </RouterLink>
-          <RouterLink v-if="auth.isAdmin" to="/admin" class="nav-link admin-link">
-            <span class="nav-icon"><AppIcon name="shield" :size="18" /></span>
-            管理
-          </RouterLink>
         </nav>
 
         <div v-if="auth.user" class="user-menu">
@@ -187,12 +183,6 @@ a {
   display: flex;
   align-items: center;
 }
-
-.admin-link.router-link-exact-active {
-  color: var(--color-danger) !important;
-  background: rgba(239, 68, 68, 0.1) !important;
-}
-
 /* ========== 用户菜单 ========== */
 .user-menu {
   display: flex;

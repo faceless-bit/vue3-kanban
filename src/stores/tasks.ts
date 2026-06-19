@@ -16,12 +16,6 @@ export interface Task {
   created_at: string
 }
 
-export interface AdminUser {
-  uid: string
-  uname: string
-  ucreated_at: string
-}
-
 function demoTasks(userId: string) {
   return [
     { user_id: userId, title: '欢迎使用任务看板', description: '点击按钮将任务在不同列之间移动，试试看吧！', status: 'todo' as TaskStatus, priority: 'mid' as TaskPriority },
@@ -35,9 +29,6 @@ function demoTasks(userId: string) {
 export const useTasksStore = defineStore('tasks', () => {
   const tasks = ref<Task[]>([])
   const loading = ref(false)
-  const adminUsers = ref<AdminUser[]>([])
-  const adminSelectedUserId = ref<string | null>(null)
-  const adminSelectedTasks = ref<Task[]>([])
 
   const todoTasks = computed(() => tasks.value.filter(t => t.status === 'todo'))
   const doingTasks = computed(() => tasks.value.filter(t => t.status === 'doing'))
@@ -142,63 +133,6 @@ export const useTasksStore = defineStore('tasks', () => {
     tasks.value = tasks.value.filter(t => t.id !== id)
   }
 
-  // ==================== 管理员 ====================
-  async function adminFetchUsers() {
-    const { data, error } = await supabase.rpc('admin_list_users')
-    if (error) {
-      console.error('获取用户列表失败:', error.message)
-      return
-    }
-    if (data) adminUsers.value = data
-  }
-
-  async function adminSelectUser(userId: string) {
-    adminSelectedUserId.value = userId
-    const { data, error } = await supabase.rpc('admin_get_user_tasks', { target_user_id: userId })
-    if (error) {
-      console.error('获取用户任务失败:', error.message)
-      return
-    }
-    if (data) adminSelectedTasks.value = data
-  }
-
-  async function adminMoveTask(taskId: number, to: TaskStatus) {
-    const task = adminSelectedTasks.value.find(t => t.id === taskId)
-    if (!task) return
-    const { error } = await supabase.rpc('admin_update_task', {
-      task_id: taskId, new_title: task.title, new_desc: task.description,
-      new_status: to, new_priority: task.priority,
-    })
-    if (error) {
-      console.error('管理员移动任务失败:', error.message)
-      return
-    }
-    task.status = to
-  }
-
-  async function adminDeleteTask(taskId: number) {
-    const { error } = await supabase.rpc('admin_delete_task', { task_id: taskId })
-    if (error) {
-      console.error('管理员删除任务失败:', error.message)
-      return
-    }
-    adminSelectedTasks.value = adminSelectedTasks.value.filter(t => t.id !== taskId)
-  }
-
-  async function adminAddTask(title: string, description: string, priority: TaskPriority = 'mid') {
-    if (!adminSelectedUserId.value) return null
-    const { data, error } = await supabase
-      .from('tasks')
-      .insert({ user_id: adminSelectedUserId.value, title, description, status: 'todo', priority })
-      .select().single()
-    if (error) {
-      console.error('管理员添加任务失败:', error.message)
-      return null
-    }
-    if (data) adminSelectedTasks.value.unshift(data)
-    return data
-  }
-
   async function migrateFromLocalStorage() {
     const auth = useAuthStore()
     if (!auth.user) return
@@ -223,7 +157,5 @@ export const useTasksStore = defineStore('tasks', () => {
   return {
     tasks, loading, todoTasks, doingTasks, doneTasks, stats, progressPercent,
     fetchTasks, addTask, moveTask, deleteTask, migrateFromLocalStorage,
-    adminUsers, adminSelectedUserId, adminSelectedTasks,
-    adminFetchUsers, adminSelectUser, adminMoveTask, adminDeleteTask, adminAddTask,
   }
 })
