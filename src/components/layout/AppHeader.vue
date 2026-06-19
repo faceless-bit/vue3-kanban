@@ -34,6 +34,10 @@ async function handleLogout() {
           <AppIcon name="chart" :size="16" />
           <span>看板</span>
         </RouterLink>
+        <RouterLink to="/stats" class="nav-link" active-class="active">
+          <AppIcon name="trending" :size="16" />
+          <span>统计</span>
+        </RouterLink>
         <RouterLink to="/about" class="nav-link" active-class="active">
           <AppIcon name="info" :size="16" />
           <span>关于</span>
