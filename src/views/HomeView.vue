@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useTasksStore } from '@/stores/tasks'
 import type { TaskStatus, TaskPriority } from '@/stores/tasks'
+import AppIcon from '@/components/AppIcon.vue'
 
 const store = useTasksStore()
 
@@ -22,9 +23,9 @@ onMounted(async () => {
 
 // ==================== 看板列配置 ====================
 const columns = [
-  { key: 'todo' as TaskStatus, label: '📌 待办', color: '#f59e0b' },
-  { key: 'doing' as TaskStatus, label: '🚀 进行中', color: '#6366f1' },
-  { key: 'done' as TaskStatus, label: '✅ 已完成', color: '#22c55e' },
+  { key: 'todo' as TaskStatus, label: '待办', color: '#f59e0b' },
+  { key: 'doing' as TaskStatus, label: '进行中', color: '#0d9488' },
+  { key: 'done' as TaskStatus, label: '已完成', color: '#22c55e' },
 ]
 
 // ==================== 过滤 ====================
@@ -76,13 +77,12 @@ function deleteTask(id: number) {
 }
 
 function formatDate(ts: string) {
-  // created_at 是 ISO 时间字符串
   const d = new Date(ts)
   if (isNaN(d.getTime())) return ts
   return `${d.getMonth() + 1}/${d.getDate()} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`
 }
 
-const priorityLabel: Record<string, string> = { low: '🟢 低', mid: '🟡 中', high: '🔴 高' }
+const priorityLabel: Record<string, string> = { low: '低', mid: '中', high: '高' }
 </script>
 
 <template>
@@ -110,7 +110,7 @@ const priorityLabel: Record<string, string> = { low: '🟢 低', mid: '🟡 中'
     <!-- 进度条 -->
     <div class="progress-bar-wrap">
       <div class="progress-info">
-        <span>📈 完成进度</span>
+        <span>完成进度</span>
         <span>{{ store.progressPercent }}%</span>
       </div>
       <div class="progress-track">
@@ -121,7 +121,7 @@ const priorityLabel: Record<string, string> = { low: '🟢 低', mid: '🟡 中'
     <!-- 搜索 & 筛选 -->
     <div class="toolbar">
       <div class="search-box">
-        <span class="search-icon">🔍</span>
+        <AppIcon name="search" :size="16" class="search-icon" />
         <input
           v-model="searchQuery"
           type="text"
@@ -143,7 +143,7 @@ const priorityLabel: Record<string, string> = { low: '🟢 低', mid: '🟡 中'
 
     <!-- 加载中 -->
     <div v-if="store.loading" class="loading-state">
-      <span class="loading-spinner">⏳</span>
+      <AppIcon name="clock" :size="32" class="loading-spinner" />
       <p>加载任务中...</p>
     </div>
 
@@ -168,37 +168,44 @@ const priorityLabel: Record<string, string> = { low: '🟢 低', mid: '🟡 中'
               :class="'priority-' + task.priority"
             >
               <div class="task-head">
-                <span class="task-priority">{{ priorityLabel[task.priority] }}</span>
+                <span class="task-priority" :class="'pri-' + task.priority">{{ priorityLabel[task.priority] }}</span>
                 <span class="task-time">{{ formatDate(task.created_at) }}</span>
               </div>
               <h4 class="task-title">{{ task.title }}</h4>
               <p class="task-desc" v-if="task.description">{{ task.description }}</p>
               <div class="task-actions">
                 <template v-if="task.status !== 'todo'">
-                  <button class="btn-action btn-left" title="左移" @click="moveTask(task.id, task.status === 'doing' ? 'todo' : 'doing')">◀</button>
+                  <button class="btn-action btn-left" title="左移" @click="moveTask(task.id, task.status === 'doing' ? 'todo' : 'doing')">
+                    <AppIcon name="chevron-left" :size="16" />
+                  </button>
                 </template>
                 <button
                   v-if="task.status !== 'done'"
                   class="btn-action btn-done"
                   title="完成"
                   @click="moveTask(task.id, 'done')"
-                >✓</button>
-                <button class="btn-action btn-del" title="删除" @click="deleteTask(task.id)">✕</button>
+                >
+                  <AppIcon name="check-circle" :size="16" />
+                </button>
+                <button class="btn-action btn-del" title="删除" @click="deleteTask(task.id)">
+                  <AppIcon name="x-circle" :size="16" />
+                </button>
               </div>
             </div>
           </TransitionGroup>
           <div v-if="getColumnTasks(col.key).length === 0" class="col-empty">
-            <span>📭 暂无任务</span>
+            <AppIcon name="inbox" :size="20" class="empty-icon" />
+            <span>暂无任务</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 隐式捐赠入口 -->
-    <div class="donate-bar">
-      <span class="donate-dot">❤️</span>
-      <span class="donate-text">喜欢这个看板？</span>
-      <button class="donate-link" @click="donateOpen = true">请开发者喝杯咖啡 ☕</button>
+    <!-- 支持入口 -->
+    <div class="support-bar">
+      <button class="support-link" @click="donateOpen = true">
+        <AppIcon name="heart" :size="14" /> 支持开发者
+      </button>
     </div>
 
     <!-- 捐赠弹窗 -->
@@ -206,7 +213,9 @@ const priorityLabel: Record<string, string> = { low: '🟢 低', mid: '🟡 中'
       <Transition name="modal">
         <div v-if="donateOpen" class="modal-overlay" @click.self="donateOpen = false">
           <div class="modal-card">
-            <button class="modal-close" @click="donateOpen = false">✕</button>
+            <button class="modal-close" @click="donateOpen = false">
+              <AppIcon name="x-circle" :size="20" />
+            </button>
             <div class="modal-layout">
               <div class="modal-left">
                 <div class="qr-frame">
@@ -214,14 +223,9 @@ const priorityLabel: Record<string, string> = { low: '🟢 低', mid: '🟡 中'
                 </div>
               </div>
               <div class="modal-right">
-                <h2>☕ 请开发者喝杯咖啡</h2>
-                <p class="modal-desc">你的每一份心意都将用于服务器维护和新功能开发，感谢支持！</p>
-                <div class="modal-tags">
-                  <span>❤️ 微信</span>
-                  <span>📱 扫码</span>
-                  <span>☕ 赞赏</span>
-                </div>
-                <p class="modal-note">扫码即可赞赏，金额随意 ❤️</p>
+                <h2>支持开发者</h2>
+                <p class="modal-desc">如果你觉得这个工具好用，欢迎赞赏支持。每一份支持都会用于项目维护和改进。</p>
+                <p class="modal-note">微信扫码，金额随意</p>
               </div>
             </div>
           </div>
@@ -231,7 +235,7 @@ const priorityLabel: Record<string, string> = { low: '🟢 低', mid: '🟡 中'
 
     <!-- 新建任务 -->
     <div class="add-task-card">
-      <h3>✏️ 新建任务</h3>
+      <h3><AppIcon name="plus" :size="18" class="add-icon" /> 新建任务</h3>
       <div v-if="addError" class="add-error">{{ addError }}</div>
       <form @submit.prevent="addTask" class="add-form">
         <input
@@ -252,12 +256,12 @@ const priorityLabel: Record<string, string> = { low: '🟢 低', mid: '🟡 中'
         />
         <div class="form-row">
           <select v-model="newPriority" class="form-select" :disabled="adding">
-            <option value="low">🟢 低优先级</option>
-            <option value="mid">🟡 中优先级</option>
-            <option value="high">🔴 高优先级</option>
+            <option value="low">低优先级</option>
+            <option value="mid">中优先级</option>
+            <option value="high">高优先级</option>
           </select>
           <button type="submit" class="btn-add" :disabled="!newTitle.trim() || adding">
-            {{ adding ? '⏳ 添加中...' : '➕ 添加任务' }}
+            {{ adding ? '添加中...' : '添加任务' }}
           </button>
         </div>
       </form>
@@ -270,15 +274,15 @@ const priorityLabel: Record<string, string> = { low: '🟢 低', mid: '🟡 中'
 .stats-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 20px;
+  gap: 14px;
+  margin-bottom: 18px;
 }
 
 .stat-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
-  padding: 20px;
+  padding: 18px;
   text-align: center;
   transition: var(--transition);
 }
@@ -288,18 +292,15 @@ const priorityLabel: Record<string, string> = { low: '🟢 低', mid: '🟡 中'
 }
 
 .stat-num {
-  font-size: 2rem;
+  font-size: 1.8rem;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--color-primary), #a855f7);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--color-primary);
 }
 
 .stat-label {
   color: var(--color-text-muted);
-  font-size: 0.85rem;
-  margin-top: 4px;
+  font-size: 0.82rem;
+  margin-top: 2px;
 }
 
 /* ========== 进度条 ========== */
@@ -307,29 +308,29 @@ const priorityLabel: Record<string, string> = { low: '🟢 低', mid: '🟡 中'
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
-  padding: 16px 20px;
-  margin-bottom: 20px;
+  padding: 14px 18px;
+  margin-bottom: 18px;
 }
 
 .progress-info {
   display: flex;
   justify-content: space-between;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: var(--color-text-muted);
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .progress-track {
-  height: 8px;
+  height: 6px;
   background: var(--color-border);
-  border-radius: 4px;
+  border-radius: 3px;
   overflow: hidden;
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--color-primary), #a855f7, var(--color-success));
-  border-radius: 4px;
+  background: var(--color-primary);
+  border-radius: 3px;
   transition: width 0.6s ease;
 }
 
@@ -340,24 +341,21 @@ const priorityLabel: Record<string, string> = { low: '🟢 低', mid: '🟡 中'
   color: var(--color-text-muted);
 }
 .loading-spinner {
-  font-size: 2rem;
   display: block;
-  margin-bottom: 10px;
+  margin: 0 auto 10px;
   animation: spin 1s linear infinite;
 }
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
-.loading-state p {
-  font-size: 0.9rem;
-}
+.loading-state p { font-size: 0.9rem; }
 
 /* ========== 工具栏 ========== */
 .toolbar {
   display: flex;
-  gap: 16px;
-  margin-bottom: 20px;
+  gap: 14px;
+  margin-bottom: 18px;
   flex-wrap: wrap;
 }
 
@@ -372,17 +370,17 @@ const priorityLabel: Record<string, string> = { low: '🟢 低', mid: '🟡 中'
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 0.9rem;
+  color: var(--color-text-muted);
 }
 
 .search-input {
   width: 100%;
-  padding: 10px 12px 10px 36px;
+  padding: 9px 12px 9px 34px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 8px;
   color: var(--color-text);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   outline: none;
   transition: var(--transition);
 }
@@ -393,37 +391,35 @@ const priorityLabel: Record<string, string> = { low: '🟢 低', mid: '🟡 中'
 
 .filter-tabs {
   display: flex;
-  gap: 4px;
+  gap: 2px;
   background: var(--color-surface);
   border-radius: 8px;
-  padding: 4px;
+  padding: 3px;
 }
 
 .filter-btn {
-  padding: 8px 16px;
+  padding: 7px 14px;
   border: none;
   background: transparent;
   color: var(--color-text-muted);
   border-radius: 6px;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 500;
   transition: var(--transition);
 }
-.filter-btn:hover {
-  color: var(--color-text);
-}
+.filter-btn:hover { color: var(--color-text); }
 .filter-btn.active {
   background: var(--color-primary);
-  color: white;
+  color: #fff;
 }
 
 /* ========== 看板三列 ========== */
 .board {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 28px;
+  gap: 14px;
+  margin-bottom: 24px;
 }
 
 .board-col {
@@ -439,41 +435,46 @@ const priorityLabel: Record<string, string> = { low: '🟢 低', mid: '🟡 中'
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 16px;
+  padding: 12px 14px;
   border-bottom: 2px solid var(--col-color);
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
 }
 
 .col-count {
   background: var(--color-border);
-  padding: 2px 10px;
-  border-radius: 12px;
-  font-size: 0.8rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.75rem;
   font-weight: 500;
 }
 
 .col-body {
-  padding: 12px;
+  padding: 10px;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .col-empty {
   text-align: center;
-  padding: 32px 16px;
+  padding: 28px 14px;
   color: var(--color-text-muted);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
 }
+.empty-icon { opacity: 0.4; }
 
 /* ========== 任务卡片 ========== */
 .task-card {
-  background: #1a2332;
+  background: #222;
   border: 1px solid var(--color-border);
-  border-radius: 10px;
-  padding: 14px;
+  border-radius: 8px;
+  padding: 12px;
   transition: var(--transition);
   position: relative;
 }
@@ -481,71 +482,70 @@ const priorityLabel: Record<string, string> = { low: '🟢 低', mid: '🟡 中'
   border-color: var(--color-primary);
   box-shadow: var(--shadow-card);
 }
-.task-card.priority-high {
-  border-left: 3px solid var(--color-danger);
-}
-.task-card.priority-mid {
-  border-left: 3px solid var(--color-warn);
-}
-.task-card.priority-low {
-  border-left: 3px solid var(--color-success);
-}
+.task-card.priority-high { border-left: 3px solid var(--color-danger); }
+.task-card.priority-mid { border-left: 3px solid var(--color-warn); }
+.task-card.priority-low { border-left: 3px solid var(--color-success); }
 
 .task-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .task-priority {
-  font-size: 0.7rem;
-  opacity: 0.8;
+  font-size: 0.68rem;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: 500;
 }
+.pri-high { background: rgba(239,68,68,0.15); color: #ef4444; }
+.pri-mid  { background: rgba(245,158,11,0.15); color: #f59e0b; }
+.pri-low  { background: rgba(34,197,94,0.15); color: #22c55e; }
 
 .task-time {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   color: var(--color-text-muted);
 }
 
 .task-title {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 600;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   line-height: 1.3;
 }
 
 .task-desc {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   color: var(--color-text-muted);
   line-height: 1.4;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .task-actions {
   display: flex;
-  gap: 6px;
+  gap: 4px;
   justify-content: flex-end;
 }
 
 .btn-action {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border: 1px solid var(--color-border);
-  border-radius: 6px;
+  border-radius: 5px;
   background: transparent;
   color: var(--color-text-muted);
   cursor: pointer;
-  font-size: 0.85rem;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: var(--transition);
+  padding: 0;
 }
 .btn-action:hover {
   border-color: var(--color-primary);
   color: var(--color-primary);
-  background: rgba(99, 102, 241, 0.1);
+  background: rgba(13, 148, 136, 0.1);
 }
 .btn-done:hover {
   border-color: var(--color-success);
@@ -559,61 +559,49 @@ const priorityLabel: Record<string, string> = { low: '🟢 低', mid: '🟡 中'
 }
 
 /* ========== 列表动画 ========== */
-.task-list-enter-active {
-  transition: all 0.3s ease;
-}
-.task-list-leave-active {
-  transition: all 0.2s ease;
-}
-.task-list-enter-from {
-  opacity: 0;
-  transform: translateY(-8px) scale(0.96);
-}
-.task-list-leave-to {
-  opacity: 0;
-  transform: translateX(20px);
-}
-.task-list-move {
-  transition: transform 0.3s ease;
-}
+.task-list-enter-active { transition: all 0.3s ease; }
+.task-list-leave-active { transition: all 0.2s ease; }
+.task-list-enter-from { opacity: 0; transform: translateY(-8px) scale(0.96); }
+.task-list-leave-to { opacity: 0; transform: translateX(20px); }
+.task-list-move { transition: transform 0.3s ease; }
 
 /* ========== 新建任务 ========== */
 .add-task-card {
   background: var(--color-surface);
   border: 1px dashed var(--color-border);
   border-radius: var(--radius);
-  padding: 24px;
+  padding: 22px;
 }
 
 .add-task-card h3 {
-  font-size: 1.05rem;
-  margin-bottom: 16px;
+  font-size: 1rem;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
+.add-icon { color: var(--color-primary); }
 
 .add-error {
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.3);
   border-radius: 8px;
-  padding: 10px 14px;
+  padding: 8px 12px;
   color: var(--color-danger);
-  font-size: 0.85rem;
-  margin-bottom: 12px;
+  font-size: 0.82rem;
+  margin-bottom: 10px;
 }
 
-.add-form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
+.add-form { display: flex; flex-direction: column; gap: 10px; }
 
 .form-input {
   width: 100%;
-  padding: 12px 16px;
-  background: #1a2332;
+  padding: 10px 14px;
+  background: #222;
   border: 1px solid var(--color-border);
   border-radius: 8px;
   color: var(--color-text);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   outline: none;
   transition: var(--transition);
 }
@@ -622,114 +610,65 @@ const priorityLabel: Record<string, string> = { low: '🟢 低', mid: '🟡 中'
   box-shadow: 0 0 0 3px var(--color-primary-glow);
 }
 
-.form-row {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
+.form-row { display: flex; gap: 10px; align-items: center; }
 
 .form-select {
-  padding: 10px 14px;
-  background: #1a2332;
+  padding: 9px 12px;
+  background: #222;
   border: 1px solid var(--color-border);
   border-radius: 8px;
   color: var(--color-text);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   outline: none;
   cursor: pointer;
 }
 
 .btn-add {
   flex: 1;
-  padding: 11px 24px;
+  padding: 10px 20px;
   background: var(--color-primary);
   border: none;
   border-radius: 8px;
-  color: white;
-  font-size: 0.9rem;
+  color: #fff;
+  font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
   transition: var(--transition);
 }
-.btn-add:hover:not(:disabled) {
-  background: #4f46e5;
-  box-shadow: var(--shadow-glow);
-}
-.btn-add:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
+.btn-add:hover:not(:disabled) { background: var(--color-primary-hover); }
+.btn-add:disabled { opacity: 0.4; cursor: not-allowed; }
 
-/* ========== 响应式 ========== */
-@media (max-width: 768px) {
-  .stats-row {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .board {
-    grid-template-columns: 1fr;
-  }
-  .toolbar {
-    flex-direction: column;
-  }
-  .form-row {
-    flex-direction: column;
-  }
-  .btn-add {
-    width: 100%;
-  }
-}
-
-/* ========== 捐赠入口（看板页） ========== */
-.donate-bar {
+/* ========== 支持入口 ========== */
+.support-bar {
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 14px 20px;
-  margin-bottom: 16px;
-  background: linear-gradient(135deg, rgba(245,158,11,0.04), rgba(239,68,68,0.04));
-  border: 1px solid rgba(245,158,11,0.1);
-  border-radius: 12px;
-  transition: border-color 0.3s ease;
+  padding: 10px;
+  margin-bottom: 14px;
 }
-.donate-bar:hover {
-  border-color: rgba(245,158,11,0.3);
-}
-.donate-dot {
-  font-size: 1rem;
-  animation: heartbeat 1.5s ease infinite;
-}
-@keyframes heartbeat {
-  0%, 100% { transform: scale(1); }
-  15% { transform: scale(1.25); }
-  30% { transform: scale(1); }
-}
-.donate-text {
-  font-size: 0.82rem;
-  color: var(--color-text-muted);
-}
-.donate-link {
+.support-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   background: none;
-  border: none;
-  color: #f59e0b;
-  font-size: 0.82rem;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 5px 14px;
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
   cursor: pointer;
-  font-weight: 500;
-  transition: color 0.2s ease;
+  transition: var(--transition);
 }
-.donate-link:hover {
-  color: #fbbf24;
-  text-decoration: underline;
+.support-link:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
-/* ========== 捐赠弹窗 ========== */
+/* ========== 弹窗 ========== */
 .modal-overlay {
   position: fixed;
   inset: 0;
   z-index: 10000;
-  background: rgba(0,0,0,0.78);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(0,0,0,0.75);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -737,71 +676,68 @@ const priorityLabel: Record<string, string> = { low: '🟢 低', mid: '🟡 中'
 }
 .modal-card {
   position: relative;
-  background: linear-gradient(145deg, #1e293b, #1a2332);
-  border: 1px solid rgba(245,158,11,0.2);
-  border-radius: 24px;
-  box-shadow: 0 28px 80px rgba(0,0,0,0.55);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
   overflow: hidden;
-  max-width: 580px;
+  max-width: 520px;
   width: 100%;
 }
 .modal-close {
   position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 36px;
-  height: 36px;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
   border: 1px solid var(--color-border);
-  border-radius: 10px;
-  background: rgba(0,0,0,0.35);
+  border-radius: 8px;
+  background: rgba(0,0,0,0.3);
   color: var(--color-text-muted);
   cursor: pointer;
-  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   z-index: 1;
-  transition: all 0.2s ease;
+  transition: var(--transition);
 }
 .modal-close:hover { border-color: var(--color-danger); color: var(--color-danger); }
 .modal-layout { display: flex; align-items: center; }
-.modal-left { padding: 32px; background: rgba(0,0,0,0.15); display: flex; align-items: center; }
-.qr-frame { background: white; padding: 16px; border-radius: 16px; box-shadow: 0 8px 28px rgba(0,0,0,0.3); }
-.qr-img { width: 180px; height: 180px; display: block; border-radius: 10px; }
-.modal-right { padding: 28px 24px; flex: 1; }
+.modal-left { padding: 28px; background: rgba(0,0,0,0.15); display: flex; align-items: center; }
+.qr-frame { background: #fff; padding: 14px; border-radius: 14px; box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+.qr-img { width: 160px; height: 160px; display: block; border-radius: 8px; }
+.modal-right { padding: 24px; flex: 1; }
 .modal-right h2 {
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   font-weight: 700;
-  margin-bottom: 10px;
-  background: linear-gradient(135deg, #f59e0b, #ef4444);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  margin-bottom: 8px;
+  color: var(--color-text);
 }
-.modal-desc { font-size: 0.83rem; color: var(--color-text-muted); line-height: 1.7; margin-bottom: 12px; }
-.modal-tags { display: flex; gap: 8px; margin-bottom: 14px; }
-.modal-tags span {
-  padding: 4px 12px;
-  background: rgba(245,158,11,0.1);
-  border: 1px solid rgba(245,158,11,0.25);
-  border-radius: 16px;
-  font-size: 0.75rem;
-  color: #f59e0b;
-}
+.modal-desc { font-size: 0.82rem; color: var(--color-text-muted); line-height: 1.6; margin-bottom: 10px; }
 .modal-note { font-size: 0.78rem; color: var(--color-text-muted); }
 
 /* 弹窗动画 */
-.modal-enter-active { transition: opacity 0.3s ease; }
-.modal-enter-active .modal-card { transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease; }
+.modal-enter-active { transition: opacity 0.25s ease; }
+.modal-enter-active .modal-card { transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease; }
 .modal-leave-active { transition: opacity 0.2s ease; }
 .modal-leave-active .modal-card { transition: transform 0.2s ease, opacity 0.2s ease; }
 .modal-enter-from { opacity: 0; }
-.modal-enter-from .modal-card { transform: scale(0.75); opacity: 0; }
+.modal-enter-from .modal-card { transform: scale(0.8); opacity: 0; }
 .modal-leave-to { opacity: 0; }
 .modal-leave-to .modal-card { transform: scale(0.85); opacity: 0; }
 
+/* ========== 响应式 ========== */
+@media (max-width: 768px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .board { grid-template-columns: 1fr; }
+  .toolbar { flex-direction: column; }
+  .form-row { flex-direction: column; }
+  .btn-add { width: 100%; }
+}
 @media (max-width: 480px) {
   .modal-layout { flex-direction: column; }
-  .modal-left { padding: 18px; }
-  .qr-img { width: 130px; height: 130px; }
-  .modal-right { padding: 14px 18px; text-align: center; }
-  .donate-bar { flex-direction: column; gap: 4px; padding: 12px; }
+  .modal-left { padding: 16px; }
+  .qr-img { width: 120px; height: 120px; }
+  .modal-right { padding: 12px 16px; text-align: center; }
 }
 </style>

@@ -24,11 +24,11 @@ export interface AdminUser {
 
 function demoTasks(userId: string) {
   return [
-    { user_id: userId, title: '👋 欢迎使用智能看板', description: '拖拽或点击按钮将任务在不同列之间移动，试试看吧！', status: 'todo' as TaskStatus, priority: 'mid' as TaskPriority },
-    { user_id: userId, title: '📝 创建你的第一个任务', description: '在底部表单输入标题和描述，点击添加即可创建新任务。', status: 'todo' as TaskStatus, priority: 'high' as TaskPriority },
-    { user_id: userId, title: '🚀 正在进行的任务示例', description: '这个任务正在进行中，完成后点击 ✓ 移到已完成。', status: 'doing' as TaskStatus, priority: 'high' as TaskPriority },
-    { user_id: userId, title: '🔍 试试搜索和筛选功能', description: '顶部工具栏可以按关键词搜索，也可以按状态筛选任务。', status: 'doing' as TaskStatus, priority: 'mid' as TaskPriority },
-    { user_id: userId, title: '✅ 这是一个已完成的任务', description: '点击 ✓ 完成任务后，它会出现在这一列。数据自动保存到云端。', status: 'done' as TaskStatus, priority: 'low' as TaskPriority },
+    { user_id: userId, title: '欢迎使用任务看板', description: '点击按钮将任务在不同列之间移动，试试看吧！', status: 'todo' as TaskStatus, priority: 'mid' as TaskPriority },
+    { user_id: userId, title: '创建你的第一个任务', description: '在底部表单输入标题和描述，点击添加即可创建新任务。', status: 'todo' as TaskStatus, priority: 'high' as TaskPriority },
+    { user_id: userId, title: '正在进行的任务示例', description: '这个任务正在进行中，完成后点击完成按钮移到已完成列。', status: 'doing' as TaskStatus, priority: 'high' as TaskPriority },
+    { user_id: userId, title: '试试搜索和筛选功能', description: '顶部工具栏可以按关键词搜索，也可以按状态筛选任务。', status: 'doing' as TaskStatus, priority: 'mid' as TaskPriority },
+    { user_id: userId, title: '这是一个已完成的任务', description: '点击完成按钮后，任务会出现在这一列。数据自动保存到云端。', status: 'done' as TaskStatus, priority: 'low' as TaskPriority },
   ]
 }
 
