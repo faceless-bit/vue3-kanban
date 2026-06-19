@@ -5,7 +5,9 @@ const config: CapacitorConfig = {
   appName: '智能任务看板',
   webDir: 'dist',
   server: {
-    androidScheme: 'https',
+    // 加载在线版本，网站更新 = App 自动更新
+    url: 'https://vue3-kanban.pages.dev',
+    cleartext: false,
   },
   android: {
     allowMixedContent: true,

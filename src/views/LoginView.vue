@@ -115,7 +115,7 @@ async function handleLogin() {
       </p>
 
       <div class="download-bar">
-        <a href="/智能任务看板.apk" class="download-link">
+        <a href="/app-release.apk" class="download-link">
           <AppIcon name="phone" :size="16" /> 下载 Android App
         </a>
       </div>

@@ -5,8 +5,8 @@ import AppIcon from '@/components/AppIcon.vue'
 const visible = ref(false)
 const tab = ref<'download' | 'contact'>('download')
 
-const apkUrl = '/智能任务看板.apk'
-const apkQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=22c55e&data=${encodeURIComponent('https://vue3-kanban.pages.dev/智能任务看板.apk')}`
+const apkUrl = '/app-release.apk'
+const apkQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=22c55e&data=${encodeURIComponent('https://vue3-kanban.pages.dev/app-release.apk')}`
 
 function open(t: 'download' | 'contact' = 'download') {
   tab.value = t
