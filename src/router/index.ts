@@ -36,16 +36,10 @@ const router = createRouter({
   ],
 })
 
-// 路由守卫
+// 路由守卫 — 当前已去掉登录限制，允许直接浏览
 router.beforeEach((to, _from) => {
   const auth = useAuthStore()
 
-  if (to.meta.requiresAuth && !auth.user) {
-    return { name: 'login', query: { redirect: to.fullPath } }
-  }
-  if (to.meta.guest && auth.user) {
-    return { name: 'home' }
-  }
   if (to.meta.requiresAdmin && !auth.isAdmin) {
     return { name: 'home' }
   }
