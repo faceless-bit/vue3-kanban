@@ -3,8 +3,13 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import AppIcon from '@/components/AppIcon.vue'
 
 const visible = ref(false)
+const tab = ref<'download' | 'contact'>('download')
 
-function open() {
+const apkUrl = '/智能任务看板.apk'
+const apkQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=22c55e&data=${encodeURIComponent('https://vue3-kanban.pages.dev/智能任务看板.apk')}`
+
+function open(t: 'download' | 'contact' = 'download') {
+  tab.value = t
   visible.value = true
   document.body.style.overflow = 'hidden'
 }
@@ -23,20 +28,40 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 </script>
 
 <template>
-  <!-- 浮动按钮 -->
-  <div class="float-area">
-    <span class="float-text">联系开发者</span>
-    <button
-      class="float-btn"
-      title="联系开发者"
-      @click="open"
-      aria-label="查看联系方式"
-    >
-      <AppIcon name="message" :size="22" />
-    </button>
+  <!-- ========== 浮动按钮组 ========== -->
+  <div class="float-group">
+    <!-- 下载 App 按钮 -->
+    <div class="float-item">
+      <span class="float-text float-text-dl">
+        <AppIcon name="download" :size="13" /> 下载 App
+      </span>
+      <button
+        class="float-btn float-btn-dl"
+        title="下载 Android App"
+        @click="open('download')"
+        aria-label="下载 App"
+      >
+        <AppIcon name="download" :size="22" />
+      </button>
+    </div>
+
+    <!-- 联系开发者按钮 -->
+    <div class="float-item">
+      <span class="float-text float-text-ct">
+        <AppIcon name="message" :size="13" /> 联系开发者
+      </span>
+      <button
+        class="float-btn float-btn-ct"
+        title="联系开发者"
+        @click="open('contact')"
+        aria-label="联系开发者"
+      >
+        <AppIcon name="message" :size="22" />
+      </button>
+    </div>
   </div>
 
-  <!-- 全屏灯箱 -->
+  <!-- ========== 全屏弹窗 ========== -->
   <Teleport to="body">
     <Transition name="lightbox">
       <div v-if="visible" class="lightbox-overlay" @click.self="close">
@@ -45,15 +70,56 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
             <AppIcon name="x-circle" :size="20" />
           </button>
 
-          <div class="lightbox-inner">
-            <!-- 左侧：二维码 -->
+          <!-- 标签切换 -->
+          <div class="modal-tabs">
+            <button
+              :class="['modal-tab', { active: tab === 'download' }]"
+              @click="tab = 'download'"
+            >
+              <AppIcon name="download" :size="16" /> 下载 App
+            </button>
+            <button
+              :class="['modal-tab', { active: tab === 'contact' }]"
+              @click="tab = 'contact'"
+            >
+              <AppIcon name="message" :size="16" /> 联系开发者
+            </button>
+          </div>
+
+          <!-- ===== 下载面板 ===== -->
+          <div v-if="tab === 'download'" class="lightbox-inner">
+            <div class="qr-section">
+              <div class="qr-frame">
+                <img
+                  :src="apkQrUrl"
+                  alt="扫描下载 App"
+                  class="lightbox-img"
+                  @error="($event.target as HTMLImageElement).style.display='none'"
+                />
+                <div class="qr-label">扫一扫下载</div>
+              </div>
+            </div>
+            <div class="info-section">
+              <AppIcon name="download" :size="36" class="info-icon dl-icon" />
+              <h2>下载 Android App</h2>
+              <p class="info-desc">
+                扫码或点击下方按钮下载<br/>
+                支持 Android 5.0+
+              </p>
+              <a :href="apkUrl" class="dl-btn" download>
+                <AppIcon name="download" :size="18" /> 立即下载 APK
+              </a>
+              <p class="info-footer">版本 1.0 · 约 4.3MB</p>
+            </div>
+          </div>
+
+          <!-- ===== 联系面板 ===== -->
+          <div v-if="tab === 'contact'" class="lightbox-inner">
             <div class="qr-section">
               <div class="qr-frame">
                 <img src="/qq-qrcode.png" alt="QQ 二维码" class="lightbox-img" />
               </div>
             </div>
-
-            <!-- 右侧：信息 -->
             <div class="info-section">
               <AppIcon name="code" :size="36" class="info-icon" />
               <h2>联系开发者</h2>
@@ -73,12 +139,19 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 </template>
 
 <style scoped>
-/* ========== 浮动区域 ========== */
-.float-area {
+/* ========== 浮动按钮组 ========== */
+.float-group {
   position: fixed;
   bottom: 28px;
   right: 28px;
   z-index: 999;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: flex-end;
+}
+
+.float-item {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -97,8 +170,24 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   transform: translateX(10px);
   transition: all 0.3s ease;
   pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
-.float-area:hover .float-text {
+
+.float-text-dl {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.25);
+  color: var(--color-success);
+}
+
+.float-text-ct {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: rgba(99, 102, 241, 0.2);
+  color: var(--color-primary);
+}
+
+.float-item:hover .float-text {
   opacity: 1;
   transform: translateX(0);
 }
@@ -108,8 +197,6 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   height: 48px;
   border-radius: 50%;
   border: 1px solid var(--color-border);
-  background: var(--color-surface);
-  color: var(--color-text-muted);
   cursor: pointer;
   padding: 0;
   display: flex;
@@ -119,14 +206,42 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   flex-shrink: 0;
 }
+
 .float-btn:hover {
   transform: scale(1.1);
+}
+
+/* 下载按钮 */
+.float-btn-dl {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.3);
+  color: var(--color-success);
+  animation: pulse-dl 2s infinite;
+}
+.float-btn-dl:hover {
+  border-color: var(--color-success);
+  color: #fff;
+  background: var(--color-success);
+  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.3);
+}
+
+@keyframes pulse-dl {
+  0%, 100% { box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15); }
+  50% { box-shadow: 0 4px 24px rgba(34, 197, 94, 0.35); }
+}
+
+/* 联系按钮 */
+.float-btn-ct {
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+}
+.float-btn-ct:hover {
   border-color: var(--color-primary);
   color: var(--color-primary);
   box-shadow: 0 6px 20px var(--color-primary-glow);
 }
 
-/* ========== 灯箱遮罩 ========== */
+/* ========== 弹窗 ========== */
 .lightbox-overlay {
   position: fixed;
   inset: 0;
@@ -170,7 +285,40 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   color: var(--color-danger);
 }
 
-/* ========== 左右分栏 ========== */
+/* ========== 标签切换 ========== */
+.modal-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.modal-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.modal-tab:hover {
+  color: var(--color-text);
+  background: rgba(255,255,255,0.03);
+}
+.modal-tab.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  background: rgba(99, 102, 241, 0.06);
+}
+
+/* ========== 内容区 ========== */
 .lightbox-inner {
   display: flex;
   align-items: stretch;
@@ -179,9 +327,11 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 .qr-section {
   padding: 36px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.15);
+  gap: 12px;
 }
 
 .qr-frame {
@@ -198,6 +348,14 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   border-radius: 6px;
 }
 
+.qr-label {
+  text-align: center;
+  font-size: 0.72rem;
+  color: #666;
+  margin-top: 4px;
+  letter-spacing: 1px;
+}
+
 .info-section {
   padding: 36px 30px;
   display: flex;
@@ -207,6 +365,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 }
 
 .info-icon { color: var(--color-primary); margin-bottom: 10px; }
+.dl-icon { color: var(--color-success); }
 
 .info-section h2 {
   font-size: 1.3rem;
@@ -220,6 +379,31 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   color: var(--color-text-muted);
   line-height: 1.6;
   margin-bottom: 14px;
+}
+
+/* 下载按钮 */
+.dl-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 28px;
+  background: var(--color-success);
+  border: none;
+  border-radius: 24px;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3);
+}
+.dl-btn:hover {
+  background: #16a34a;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
 }
 
 .info-tags {
@@ -257,14 +441,16 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 
 /* ========== 响应式 ========== */
 @media (max-width: 640px) {
-  .float-area { bottom: 16px; right: 16px; }
+  .float-group { bottom: 16px; right: 16px; gap: 10px; }
   .float-btn { width: 42px; height: 42px; }
   .float-text { font-size: 0.7rem; padding: 4px 8px; }
   .lightbox-inner { flex-direction: column; }
   .qr-section { padding: 20px; }
   .lightbox-img { width: 150px; height: 150px; }
   .info-section { padding: 18px 22px; text-align: center; align-items: center; }
+  .dl-btn { width: 100%; }
 }
+
 @media (max-width: 420px) {
   .float-text { display: none; }
 }
