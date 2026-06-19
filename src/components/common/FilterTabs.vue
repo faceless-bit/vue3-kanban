@@ -1,53 +1,34 @@
 <script setup lang="ts">
 /**
- * 状态筛选标签组
- * 选中项高亮，点击切换
+ * 筛选标签 — Linear 风格：透明底 + 文字高亮
  */
 import type { TaskStatus } from '@/types'
 import { FILTER_OPTIONS } from '@/composables/useSearch'
 
-defineProps<{
-  active: TaskStatus | 'all'
-}>()
-
-const emit = defineEmits<{
-  change: [value: TaskStatus | 'all']
-}>()
+defineProps<{ active: TaskStatus | 'all' }>()
+const emit = defineEmits<{ change: [v: TaskStatus | 'all'] }>()
 </script>
 
 <template>
-  <div class="tabs">
+  <div class="row">
     <button
-      v-for="opt in FILTER_OPTIONS"
-      :key="opt.key"
-      :class="['tab', { active: active === opt.key }]"
-      @click="emit('change', opt.key)"
-    >
-      {{ opt.label }}
-    </button>
+      v-for="o in FILTER_OPTIONS" :key="o.key"
+      :class="['tab', { on: active === o.key }]"
+      @click="emit('change', o.key)"
+    >{{ o.label }}</button>
   </div>
 </template>
 
 <style scoped>
-.tabs {
-  display: flex;
-  gap: 2px;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
-  padding: 3px;
-}
+.row { display: flex; gap: 2px; }
 .tab {
-  padding: 5px 12px;
-  border-radius: var(--radius-sm);
-  font-size: 0.8125rem;
+  padding: 5px 10px;
+  border-radius: var(--radius-xs);
+  font-size: 0.75rem;
   font-weight: 500;
   color: var(--text-secondary);
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: all var(--dur-fast) var(--ease-out);
 }
-.tab:hover { color: var(--text-primary); }
-.tab.active {
-  background: var(--accent);
-  color: #ffffff;
-}
+.tab:hover { color: var(--text-primary); background: var(--bg-hover); }
+.tab.on { color: var(--accent); background: var(--accent-muted); }
 </style>

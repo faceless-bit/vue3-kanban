@@ -104,7 +104,7 @@ async function handleSubmit() {
   width: 100%;
   max-width: 380px;
   background: var(--bg-surface);
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--bg-hover);
   border-radius: var(--radius-lg);
   padding: var(--space-xl) var(--space-lg);
 }
@@ -134,11 +134,11 @@ async function handleSubmit() {
   height: 40px;
   padding: 0 14px;
   background: var(--bg-elevated);
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--bg-hover);
   border-radius: var(--radius-sm);
   font-size: 0.875rem;
   outline: none;
-  transition: border-color var(--duration-fast) var(--ease-out);
+  transition: border-color var(--dur-fast) var(--ease-out);
 }
 .input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
 .input:disabled { opacity: 0.5; }
@@ -157,7 +157,7 @@ async function handleSubmit() {
   justify-content: center;
   border-radius: var(--radius-sm);
   color: var(--text-tertiary);
-  transition: color var(--duration-fast) var(--ease-out);
+  transition: color var(--dur-fast) var(--ease-out);
 }
 .pwd-toggle:hover { color: var(--accent); }
 
@@ -168,7 +168,7 @@ async function handleSubmit() {
   border-radius: var(--radius-sm);
   font-size: 0.9375rem;
   font-weight: 600;
-  transition: background var(--duration-fast) var(--ease-out);
+  transition: background var(--dur-fast) var(--ease-out);
   margin-top: 2px;
 }
 .btn:hover:not(:disabled) { background: var(--accent-hover); }

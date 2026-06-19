@@ -100,29 +100,22 @@ async function handleDelete(id: number) {
 </template>
 
 <style scoped>
-.board-shell {
-  max-width: 1200px;
-  margin: 0 auto;
-}
+.board-shell { max-width: 1200px; margin: 0 auto; }
 
 .toolbar {
   display: flex;
   gap: var(--space-md);
-  margin-bottom: var(--space-lg);
+  margin-bottom: var(--space-xl);
   flex-wrap: wrap;
 }
 
-.loading {
-  text-align: center;
-  padding: var(--space-2xl);
-  color: var(--text-tertiary);
-}
+.loading { text-align: center; padding: var(--space-2xl); color: var(--text-tertiary); }
 
 .board {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--space-md);
-  margin-bottom: var(--space-lg);
+  margin-bottom: var(--space-xl);
 }
 
 @media (max-width: 768px) {

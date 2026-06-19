@@ -53,7 +53,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   position: relative;
   width: 100%;
   background: var(--bg-elevated);
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--bg-hover);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
 }
@@ -69,7 +69,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
   justify-content: center;
   color: var(--text-tertiary);
   z-index: 1;
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: all var(--dur-fast) var(--ease-out);
 }
 .close-btn:hover {
   color: var(--red);

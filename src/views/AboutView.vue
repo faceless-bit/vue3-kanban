@@ -139,7 +139,7 @@ const painPoints = [
 .hero-tags span {
   padding: 6px 16px;
   background: var(--bg-surface);
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--bg-hover);
   border-radius: var(--radius-full);
   font-size: 0.8125rem;
   color: var(--text-secondary);
@@ -151,7 +151,7 @@ const painPoints = [
 }
 .block.alt {
   background: var(--bg-surface);
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--bg-hover);
   border-radius: var(--radius-lg);
   padding: var(--space-xl);
 }
@@ -170,10 +170,10 @@ const painPoints = [
 }
 .feat-card {
   background: var(--bg-surface);
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--bg-hover);
   border-radius: var(--radius-md);
   padding: var(--space-lg);
-  transition: border-color var(--duration-fast) var(--ease-out);
+  transition: border-color var(--dur-fast) var(--ease-out);
 }
 .feat-card:hover {
   border-color: var(--accent);
@@ -205,7 +205,7 @@ const painPoints = [
   gap: var(--space-md);
   padding: 12px 16px;
   border-radius: var(--radius-sm);
-  transition: background var(--duration-fast) var(--ease-out);
+  transition: background var(--dur-fast) var(--ease-out);
 }
 .pain-row:hover {
   background: var(--accent-muted);
@@ -220,7 +220,7 @@ const painPoints = [
   align-items: center;
   gap: var(--space-lg);
   background: var(--bg-surface);
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--bg-hover);
   border-radius: var(--radius-md);
   padding: var(--space-lg);
 }
@@ -239,7 +239,7 @@ const painPoints = [
   text-align: center;
   padding: var(--space-xl);
   background: var(--bg-surface);
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--bg-hover);
   border-radius: var(--radius-lg);
 }
 .cta h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: var(--space-sm); }
@@ -252,7 +252,7 @@ const painPoints = [
   font-size: 0.9375rem;
   font-weight: 600;
   border-radius: var(--radius-sm);
-  transition: background var(--duration-fast) var(--ease-out);
+  transition: background var(--dur-fast) var(--ease-out);
 }
 .cta-btn:hover { background: var(--accent-hover); }
 
@@ -277,7 +277,7 @@ const painPoints = [
 .footer {
   text-align: center;
   padding: var(--space-lg) 0;
-  border-top: 1px solid var(--border-default);
+  border-top: 1px solid var(--bg-hover);
   margin-top: var(--space-lg);
 }
 .footer p { font-size: 0.8125rem; color: var(--text-tertiary); }

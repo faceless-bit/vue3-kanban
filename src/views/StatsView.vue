@@ -161,7 +161,7 @@ watch([stats, weekNew, weekDone, donePercent], () => animateNumbers())
         <div class="chart-body">
           <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="trend-svg">
             <!-- 网格线 -->
-            <line v-for="i in 4" :key="'g'+i" :x1="0" :y1="25*i" :x2="100" :y2="25*i" stroke="var(--border-subtle)" stroke-width="0.3"/>
+            <line v-for="i in 4" :key="'g'+i" :x1="0" :y1="25*i" :x2="100" :y2="25*i" stroke="var(--bg-hover)" stroke-width="0.3"/>
             <!-- 折线 -->
             <path :d="trendPath" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
             <!-- 填充 -->
@@ -235,13 +235,12 @@ watch([stats, weekNew, weekDone, donePercent], () => animateNumbers())
 }
 .kpi {
   background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   padding: 20px;
   text-align: center;
-  transition: all var(--duration-normal) var(--ease-out);
+  transition: background var(--dur-fast) var(--ease-out);
 }
-.kpi:hover { border-color: var(--border-hover); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.kpi:hover { background: var(--bg-hover); }
 .kpi-num {
   font-size: 2.25rem;
   font-weight: 700;
@@ -263,8 +262,7 @@ watch([stats, weekNew, weekDone, donePercent], () => animateNumbers())
 }
 .chart-card {
   background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   padding: 20px;
   margin-bottom: 12px;
 }
@@ -296,7 +294,7 @@ watch([stats, weekNew, weekDone, donePercent], () => animateNumbers())
 .dist-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .dist-label { font-size: 0.8125rem; color: var(--text-secondary); flex: 1; }
 .dist-val { font-size: 0.875rem; font-weight: 600; color: var(--text-primary); font-variant-numeric: tabular-nums; }
-.dist-bar-wrap { height: 6px; background: var(--bg-surface-hover); border-radius: 3px; overflow: hidden; }
+.dist-bar-wrap { height: 6px; background: var(--bg-hover); border-radius: 3px; overflow: hidden; }
 .dist-bar {
   height: 100%;
   border-radius: 3px;
@@ -307,7 +305,7 @@ watch([stats, weekNew, weekDone, donePercent], () => animateNumbers())
 /* 优先级 */
 .pri-row { display: flex; flex-direction: column; gap: 12px; }
 .pri-item { display: flex; flex-direction: column; gap: 6px; }
-.pri-bar-wrap { height: 8px; background: var(--bg-surface-hover); border-radius: 4px; overflow: hidden; }
+.pri-bar-wrap { height: 8px; background: var(--bg-hover); border-radius: 4px; overflow: hidden; }
 .pri-bar {
   height: 100%;
   border-radius: 4px;

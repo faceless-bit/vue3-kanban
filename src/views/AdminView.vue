@@ -150,7 +150,7 @@ function formatDate(ts: string) {
 /* 侧边栏 */
 .sidebar {
   background: var(--bg-surface);
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--bg-hover);
   border-radius: var(--radius-md);
   overflow: hidden;
   max-height: calc(100vh - 180px);
@@ -162,13 +162,13 @@ function formatDate(ts: string) {
   justify-content: space-between;
   align-items: center;
   padding: 12px 14px;
-  border-bottom: 1px solid var(--border-default);
+  border-bottom: 1px solid var(--bg-hover);
   font-size: 0.8125rem;
   font-weight: 600;
 }
 .count {
   font-size: 0.75rem;
-  background: var(--bg-surface-hover);
+  background: var(--bg-hover);
   padding: 2px 8px;
   border-radius: var(--radius-full);
 }
@@ -183,9 +183,9 @@ function formatDate(ts: string) {
   font-size: 0.8125rem;
   text-align: left;
   color: var(--text-secondary);
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: all var(--dur-fast) var(--ease-out);
 }
-.user-row:hover { background: var(--bg-surface-hover); }
+.user-row:hover { background: var(--bg-hover); }
 .user-row.active { color: var(--accent); background: var(--accent-muted); }
 .user-meta { display: flex; flex-direction: column; min-width: 0; }
 .uname { font-weight: 600; color: var(--text-primary); }
@@ -211,7 +211,7 @@ function formatDate(ts: string) {
   gap: var(--space-md);
   padding: 8px 14px;
   background: var(--bg-surface);
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--bg-hover);
   border-radius: var(--radius-sm);
   margin-bottom: var(--space-md);
   font-size: 0.8125rem;

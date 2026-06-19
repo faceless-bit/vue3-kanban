@@ -29,11 +29,11 @@ const theme = useThemeStore()
   align-items: center;
   justify-content: center;
   color: var(--text-secondary);
-  transition: color var(--duration-fast) var(--ease-out),
-              background var(--duration-fast) var(--ease-out);
+  transition: color var(--dur-fast) var(--ease-out),
+              background var(--dur-fast) var(--ease-out);
 }
 .theme-btn:hover {
   color: var(--text-primary);
-  background: var(--bg-surface-hover);
+  background: var(--bg-hover);
 }
 </style>

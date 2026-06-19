@@ -1,13 +1,9 @@
 <script setup lang="ts">
 /**
- * 任务卡片 — Linear 风格
- * 胶囊优先级标签 / Hover 上浮 / 精致阴影
- * 按钮逻辑：
- *   待办 → [移入进行中] [删除]
- *   进行中 → [退回待办] [完成] [删除]
- *   已完成 → [退回进行中] [删除]
+ * 任务卡片 — Linear 极简风格
+ * 无边框 / 操作按钮 hover 显示 / 优先级小圆点
  */
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import type { Task, TaskStatus } from '@/types'
 
 const props = defineProps<{ task: Task }>()
@@ -16,63 +12,49 @@ const emit = defineEmits<{
   delete: [id: number]
 }>()
 
-/** 优先级配置 */
-const tag = computed(() => {
-  const m = { high: { label: '高', cls: 'pri-high' }, mid: { label: '中', cls: 'pri-mid' }, low: { label: '低', cls: 'pri-low' } }
-  return m[props.task.priority] || m.mid
-})
+const hovering = ref(false)
 
-/** 格式化时间 */
+const dot = computed(() => ({ high: 'var(--red)', mid: 'var(--amber)', low: 'var(--green)' }[props.task.priority]))
+
 const timeStr = computed(() => {
   const d = new Date(props.task.created_at)
-  if (isNaN(d.getTime())) return props.task.created_at
-  const now = new Date()
-  const diff = now.getTime() - d.getTime()
-  if (diff < 3600000) return `${Math.floor(diff/60000)} 分钟前`
-  if (diff < 86400000) return `${Math.floor(diff/3600000)} 小时前`
-  return `${d.getMonth()+1}/${d.getDate()}`
+  if (isNaN(d.getTime())) return ''
+  const diff = Date.now() - d.getTime()
+  if (diff < 3600000) return `${Math.floor(diff / 60000)}m`
+  if (diff < 86400000) return `${Math.floor(diff / 3600000)}h`
+  return `${d.getMonth() + 1}/${d.getDate()}`
 })
 </script>
 
 <template>
-  <div class="card">
-    <!-- 头部 -->
-    <div class="card-head">
-      <span class="tag" :class="tag.cls">{{ tag.label }}</span>
+  <div
+    class="card"
+    @mouseenter="hovering = true"
+    @mouseleave="hovering = false"
+  >
+    <div class="top">
+      <span class="dot" :style="{ background: dot }"></span>
+      <span class="title">{{ task.title }}</span>
       <span class="time">{{ timeStr }}</span>
     </div>
-
-    <!-- 标题 -->
-    <p class="title">{{ task.title }}</p>
-
-    <!-- 描述 -->
     <p v-if="task.description" class="desc">{{ task.description }}</p>
-
-    <!-- 操作按钮 -->
-    <div class="actions">
-      <!-- 待办：→ 移到进行中 -->
-      <button v-if="task.status === 'todo'" class="btn forward" title="移到进行中" @click="emit('move', task.id, 'doing')">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+    <div v-if="hovering" class="acts">
+      <button v-if="task.status==='todo'" class="act" title="进行中" @click="emit('move',task.id,'doing')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
-
-      <!-- 进行中：← 退回, ✓ 完成 -->
-      <template v-if="task.status === 'doing'">
-        <button class="btn back" title="退回待办" @click="emit('move', task.id, 'todo')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+      <template v-if="task.status==='doing'">
+        <button class="act" title="退回" @click="emit('move',task.id,'todo')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
-        <button class="btn done" title="完成" @click="emit('move', task.id, 'done')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <button class="act" title="完成" @click="emit('move',task.id,'done')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
         </button>
       </template>
-
-      <!-- 已完成：← 退回 -->
-      <button v-if="task.status === 'done'" class="btn back" title="退回进行中" @click="emit('move', task.id, 'doing')">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+      <button v-if="task.status==='done'" class="act" title="退回" @click="emit('move',task.id,'doing')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
-
-      <!-- 删除 -->
-      <button class="btn del" title="删除" @click="emit('delete', task.id)">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      <button class="act del" title="删除" @click="emit('delete',task.id)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
       </button>
     </div>
   </div>
@@ -80,87 +62,69 @@ const timeStr = computed(() => {
 
 <style scoped>
 .card {
+  padding: 10px 12px;
   background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 12px 14px;
-  transition: all var(--duration-normal) var(--ease-out);
-  position: relative;
+  border-radius: var(--radius-sm);
+  transition: background var(--dur-fast) var(--ease-out);
 }
-.card:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--border-hover);
-}
+.card:hover { background: var(--bg-hover); }
 
-/* 头部 */
-.card-head {
+.top {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 6px;
+  gap: 8px;
 }
-/* 胶囊标签 */
-.tag {
-  font-size: 0.625rem;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: var(--radius-full);
-  letter-spacing: 0.02em;
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
-.pri-high { color: var(--red);   background: var(--red-muted); }
-.pri-mid  { color: var(--amber); background: var(--amber-muted); }
-.pri-low  { color: var(--green); background: var(--green-muted); }
-
+.title {
+  flex: 1;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .time {
   font-size: 0.6875rem;
   color: var(--text-tertiary);
+  flex-shrink: 0;
 }
 
-/* 标题 */
-.title {
-  font-size: 0.875rem;
-  font-weight: 550;
-  line-height: 1.35;
-  color: var(--text-primary);
-  margin-bottom: 2px;
-}
-
-/* 描述 */
 .desc {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   color: var(--text-secondary);
   line-height: 1.4;
-  margin-top: 4px;
+  margin-top: 3px;
+  padding-left: 14px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-/* 操作按钮 */
-.actions {
+.acts {
   display: flex;
-  gap: 4px;
+  gap: 2px;
   justify-content: flex-end;
-  margin-top: 10px;
-  padding-top: 8px;
-  border-top: 1px solid var(--border-subtle);
+  margin-top: 6px;
+  padding-top: 6px;
 }
-
-.btn {
-  width: 26px;
-  height: 26px;
-  border-radius: var(--radius-sm);
+.act {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-xs);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-tertiary);
-  transition: all var(--duration-fast) var(--ease-out);
+  transition: all var(--dur-fast) var(--ease-out);
 }
-.btn:hover { background: var(--bg-surface-hover); color: var(--text-primary); }
-.forward:hover { color: var(--accent); background: var(--accent-muted); }
-.back:hover    { color: var(--amber); background: var(--amber-muted); }
-.done:hover    { color: var(--green); background: var(--green-muted); }
-.del:hover     { color: var(--red);   background: var(--red-muted); }
+.act:hover { color: var(--text-primary); background: var(--bg-active); }
+.del:hover { color: var(--red); }
 </style>
