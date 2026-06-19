@@ -57,3 +57,4 @@ android/local.properties
 *.iml
 .idea/
 android/.idea/
+*.keystore
